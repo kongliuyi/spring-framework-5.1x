@@ -3,9 +3,7 @@ package net.riking.aop;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 
-/**
- * @author JingQ at 2019-06-20
- */
+
 @Aspect
 public class AspectJTest {
 

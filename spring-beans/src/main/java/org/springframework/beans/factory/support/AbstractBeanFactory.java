@@ -147,7 +147,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/** String resolvers to apply e.g. to annotation attribute values. */
 	private final List<StringValueResolver> embeddedValueResolvers = new CopyOnWriteArrayList<>();
 
-	/** BeanPostProcessors to apply in createBean. */
+	/** BeanPostProcessors to apply in createBean. 在创建Bean中调用BeanPostProcessor*/
 	private final List<BeanPostProcessor> beanPostProcessors = new CopyOnWriteArrayList<>();
 
 	/** Indicates whether any InstantiationAwareBeanPostProcessors have been registered. */
@@ -225,6 +225,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	}
 
 	/**
+	 * //返回指定bean的一个实例，该实例可以是共享的，也可以是独立的。
 	 * Return an instance, which may be shared or independent, of the specified bean.
 	 * @param name the name of the bean to retrieve
 	 * @param requiredType the required type of the bean to retrieve
@@ -239,12 +240,40 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
 
+		/**
+		 * 通过 name 获取 beanName。这里不使用 name 直接作为 beanName 有两个原因
+		 * 1、name 可能会以 & 字符开头，表明调用者想获取 FactoryBean 本身，而非 FactoryBean
+		 *   实现类所创建的 bean。在 BeanFactory 中，FactoryBean 的实现类和其他的 bean 存储
+		 *   方式是一致的，即 <beanName, bean>，beanName 中是没有 & 这个字符的。所以我们需要
+		 *   将 name 的首字符 & 移除，这样才能从缓存里取到 FactoryBean 实例。
+		 * 2、还是别名的问题，转换需要
+		 * &beanName
+		 */
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
+		/**
+		 * 从缓存中获取单利的bean
+		 * 这个方法在初始化的时候会调用，在getBean的时候也会调用
+		 * 例如：currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
+		 * 为什么需要这么做呢？
+		 * 也就是说spring在初始化的时候先获取这个对象
+		 * 判断这个对象是否被实例化好了(普通情况下绝对为空====有一种情况可能不为空)
+		 * 从spring的bean容器中获取一个bean，由于spring中bean容器是一个map（singletonObjects）
+		 * 所以你可以理解getSingleton(beanName)等于beanMap.get(beanName)
+		 * 由于方法会在spring环境初始化的时候（就是对象被创建的时候调用一次）调用一次
+		 * 还会在getBean的时候调用一次
+		 * 所以再调试的时候需要特别注意，不能直接断点在这里，
+		 * 需要先进入到annotationConfigApplicationContext.getBean(IndexDao.class)
+		 * 之后再来断点，这样就确保了我们是在获取这个bean的时候调用的
+		 *
+		 * 需要说明的是在初始化时候调用一般都是返回null
+		 *
+		 */
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
+			//这里的代码是对于日志的记录，方便我们以后阅读应该注释，不影响spring功能
 			if (logger.isTraceEnabled()) {
 				if (isSingletonCurrentlyInCreation(beanName)) {
 					logger.trace("Returning eagerly cached instance of singleton bean '" + beanName +
@@ -254,21 +283,37 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					logger.trace("Returning cached instance of singleton bean '" + beanName + "'");
 				}
 			}
+
+			/**
+			 * 从已经加载的object中获取bean
+			 * 如果 sharedInstance 是普通的单例 bean，下面的方法会直接返回。但如果
+			 * sharedInstance 是 FactoryBean 类型的，则需调用 getObject 工厂方法获取真正的
+			 * bean 实例。如果用户想获取 FactoryBean 本身，这里也不会做特别的处理，直接返回
+			 * 即可。毕竟 FactoryBean 的实现类本身也是一种 bean，只不过具有一点特殊的功能而已。
+			 */
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
 		else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
+			/**
+			 * 如果我们已经创建这个bean实例失败
+			 * 检查要获取的bean是不是当前线程正在创建中的原型bean,（如果是原型的情况下，正常创建的Bean会将beanName放入ThreadLocal中）
+			 * 如果是原型不应该在初始化的时候创建
+			 */
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 
 			// Check if bean definition exists in this factory.
+			//检查当前BeanFactory的父类BeanFactory是不是不为空，并且要获取的bean不包含在当前BeanFactory中
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
+				//还原要获取的bean的beanName
 				String nameToLookup = originalBeanName(name);
+				//调用parentBeanFactory获取bean
 				if (parentBeanFactory instanceof AbstractBeanFactory) {
 					return ((AbstractBeanFactory) parentBeanFactory).doGetBean(
 							nameToLookup, requiredType, args, typeCheckOnly);
@@ -285,23 +330,31 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					return (T) parentBeanFactory.getBean(nameToLookup);
 				}
 			}
-
+			//typeCheckOnly默认为false
 			if (!typeCheckOnly) {
+				//添加到alreadyCreated set集合当中，表示他已经创建过一场
+				//如果当前bean不在正在创建中的bean的缓存集合（alreadyCreated）中，就加进去
 				markBeanAsCreated(beanName);
 			}
 
 			try {
+				//合并要获取的bean的属性并把属性赋值给一个RootBeanDefinition
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+				//检查合并之后的RootBeanDefinition的是不是抽象的，还会检查如果获取bean的参数不空的情况下，bean的类型是singleton的就会报错，
+				// 因为单例情况下bean都是一样的，只有原型（prototype）情况下才能不一致
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
+				//获取当前bean依赖的bean的名称的数组
 				String[] dependsOn = mbd.getDependsOn();
+				//如果依赖不为空就先加载依赖到的bean
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
 						if (isDependent(beanName, dep)) {
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
 						}
+						//将要获取的bean的beanName和所依赖到的bean的beanName之间的关系缓存起来
 						registerDependentBean(dep, beanName);
 						try {
 							getBean(dep);
@@ -314,6 +367,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Create bean instance.
+				//创建单例bean实例
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
@@ -329,20 +383,22 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					});
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
-
+				//不是单例即是原型的情况
 				else if (mbd.isPrototype()) {
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;
 					try {
+						//将需要创建的bean的beanName放到ThreadLocal中
 						beforePrototypeCreation(beanName);
 						prototypeInstance = createBean(beanName, mbd, args);
 					}
 					finally {
+						//将需要创建的bean的beanName从ThreadLocal中移除
 						afterPrototypeCreation(beanName);
 					}
 					bean = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd);
 				}
-
+                //其余类型bean
 				else {
 					String scopeName = mbd.getScope();
 					final Scope scope = this.scopes.get(scopeName);
@@ -351,11 +407,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					}
 					try {
 						Object scopedInstance = scope.get(beanName, () -> {
+							//将需要创建的bean的beanName放到ThreadLocal中
 							beforePrototypeCreation(beanName);
 							try {
 								return createBean(beanName, mbd, args);
 							}
 							finally {
+								//将需要创建的bean的beanName从ThreadLocal中移除
 								afterPrototypeCreation(beanName);
 							}
 						});
@@ -1029,6 +1087,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	}
 
 	/**
+	 * 返回当前是否正在创建指定的原型bean
 	 * Return whether the specified prototype bean is currently in creation
 	 * (within the current thread).
 	 * @param beanName the name of the bean
@@ -1565,6 +1624,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	}
 
 	/**
+	 * 将指定的bean标记为已经创建(或即将创建)。
 	 * Mark the specified bean as already created (or about to be created).
 	 * <p>This allows the bean factory to optimize its caching for repeated
 	 * creation of the specified bean.
