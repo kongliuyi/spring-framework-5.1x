@@ -71,9 +71,13 @@ abstract class ConfigurationClassUtils {
 
 
 	/**
+	 *
+	 * 检查给定的bean定义是否是配置类的候选对象(或在配置/组件类中声明的嵌套组件类，也可以自动注册)，并相应地进行标记。
 	 * Check whether the given bean definition is a candidate for a configuration class
 	 * (or a nested component class declared within a configuration/component class,
 	 * to be auto-registered as well), and mark it accordingly.
+	 *
+	 *
 	 * @param beanDef the bean definition to check
 	 * @param metadataReaderFactory the current factory in use by the caller
 	 * @return whether the candidate qualifies as (any kind of) configuration class
@@ -90,6 +94,10 @@ abstract class ConfigurationClassUtils {
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
+			/**
+			 * 		如果BeanDefinition 是 AnnotatedBeanDefinition的实例,并且className 和 BeanDefinition中 的元数据 的类名相同
+			 * 		则直接从BeanDefinition 获得Metadata
+			 */
 			metadata = ((AnnotatedBeanDefinition) beanDef).getMetadata();
 		}
 		else if (beanDef instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) beanDef).hasBeanClass()) {
@@ -143,6 +151,7 @@ abstract class ConfigurationClassUtils {
 	}
 
 	/**
+	 * 判断类上是否含有 @Configuration 注解
 	 * Check the given metadata for a full configuration class candidate
 	 * (i.e. a class annotated with {@code @Configuration}).
 	 * @param metadata the metadata of the annotated class
@@ -154,6 +163,9 @@ abstract class ConfigurationClassUtils {
 	}
 
 	/**
+	 * 判断类上是否含有 @Component,@ComponentScan,@Import,@ImportResource
+	 * 判断类方法上是否含有@Bean
+	 * 我理解就是这个类是否是bean配置类
 	 * Check the given metadata for a lite configuration class candidate
 	 * (e.g. a class annotated with {@code @Component} or just having
 	 * {@code @Import} declarations or {@code @Bean methods}).
@@ -166,7 +178,13 @@ abstract class ConfigurationClassUtils {
 		if (metadata.isInterface()) {
 			return false;
 		}
-
+		/**
+		 * candidateIndicators 初始化时:
+		 * 		candidateIndicators.add(Component.class.getName());
+		 * 		candidateIndicators.add(ComponentScan.class.getName());
+		 * 		candidateIndicators.add(Import.class.getName());
+		 * 		candidateIndicators.add(ImportResource.class.getName())
+		 */;
 		// Any of the typical annotations found?
 		for (String indicator : candidateIndicators) {
 			if (metadata.isAnnotated(indicator)) {
@@ -174,7 +192,7 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
-		// Finally, let's look for @Bean methods...
+		// Finally, let's look for @Bean methods... 查看注册的类方法中 是否含有注解 @Bean
 		try {
 			return metadata.hasAnnotatedMethods(Bean.class.getName());
 		}
@@ -187,6 +205,9 @@ abstract class ConfigurationClassUtils {
 	}
 
 	/**
+	 * 检查 BeanDefinition 定义中是否 configurationClass属性为full
+	 *
+	 * 确定给定的bean定义是否表示完整的{@code @Configuration}
 	 * Determine whether the given bean definition indicates a full {@code @Configuration}
 	 * class, through checking {@link #checkConfigurationClassCandidate}'s metadata marker.
 	 */

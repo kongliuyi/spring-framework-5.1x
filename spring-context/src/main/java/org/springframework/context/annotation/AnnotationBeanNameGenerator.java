@@ -80,6 +80,7 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	}
 
 	/**
+	 * 从类上的注解上派生一个bean的名称即beanName。
 	 * Derive a bean name from one of the annotations on the class.
 	 * @param annotatedDef the annotation-aware bean definition
 	 * @return the bean name, or {@code null} if none is found
@@ -109,6 +110,7 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	}
 
 	/**
+	 * 检查给定的注解是否是允许的原型
 	 * Check whether the given annotation is a stereotype that is allowed
 	 * to suggest a component name through its annotation {@code value()}.
 	 * @param annotationType the name of the annotation class to check
@@ -128,6 +130,7 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	}
 
 	/**
+	 * 给beanDefinition 派生一个 默认的beanName 。 例如：AppConfig->appConfig
 	 * Derive a default bean name from the given bean definition.
 	 * <p>The default implementation delegates to {@link #buildDefaultBeanName(BeanDefinition)}.
 	 * @param definition the bean definition to build a bean name for

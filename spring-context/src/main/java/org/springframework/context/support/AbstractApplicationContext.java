@@ -732,7 +732,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		 *
 		 * 这个地方需要注意getBeanFactoryPostProcessors()是获取手动给spring的BeanFactoryPostProcessor
 		 * 自定义并不仅仅是程序员自己写的，自己写的可以分为是加@Companent 还是没有加，
-		 * 如果加了@Companent getBeanFactoryPostProcessors()这个地方获取不到，因为是spring自己扫描的
+		 * 如果加了@Companent getBeanFactoryPostProcessors()这个方法获取不到，因为是spring自己扫描的
 		 * 如果不加@Companent（需要手动调用AnnotationConfigApplicationContext.addBeanFactoryPostProcessor()注入），getBeanFactoryPostProcessors()这个地方才能获取到;
 		 * 为什么得不到? 因为getBeanFactoryPostProcessors()这个方法是直接获取一个list，
 		 * 这个list是在AnnotationConfigApplicationContext被定义
