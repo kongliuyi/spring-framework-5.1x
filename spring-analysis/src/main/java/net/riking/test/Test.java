@@ -9,7 +9,7 @@ public class Test {
 
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext  applicationContext=new AnnotationConfigApplicationContext();
-		applicationContext.register(AopBean.class);
+		applicationContext.register(AppConfig.class);
 		applicationContext.addBeanFactoryPostProcessor(new CarBeanFactoryPostProcessor());
 		applicationContext.refresh();
 		AopBean aopBean = (AopBean) applicationContext.getBean("aopBean");

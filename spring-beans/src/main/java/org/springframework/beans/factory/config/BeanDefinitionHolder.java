@@ -24,6 +24,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
+ *  提示自己: 可以借鉴BeanDefinitionHolder这种数据结构
+ *
  * Holder for a BeanDefinition with name and aliases.
  * Can be registered as a placeholder for an inner bean.
  *
@@ -39,11 +41,14 @@ import org.springframework.util.StringUtils;
  */
 public class BeanDefinitionHolder implements BeanMetadataElement {
 
+	//持有BeanDefinition
 	private final BeanDefinition beanDefinition;
 
+	//BeanDefinition的名称
 	private final String beanName;
 
-	@Nullable
+	//BeanDefinition的别名
+	@Nullable//Nullable注解表示该属性可以为空
 	private final String[] aliases;
 
 
@@ -109,6 +114,7 @@ public class BeanDefinitionHolder implements BeanMetadataElement {
 	}
 
 	/**
+	 * 	获取beanDefinition的源对象，实现了BeanMetadataElement
 	 * Expose the bean definition's source object.
 	 * @see BeanDefinition#getSource()
 	 */
@@ -119,6 +125,7 @@ public class BeanDefinitionHolder implements BeanMetadataElement {
 	}
 
 	/**
+	 * 	判断指定的名称与beanName或者别名身份匹配
 	 * Determine whether the given candidate name matches the bean name
 	 * or the aliases stored in this bean definition.
 	 */
