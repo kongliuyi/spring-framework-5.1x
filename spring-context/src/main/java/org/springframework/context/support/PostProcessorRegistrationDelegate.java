@@ -101,8 +101,11 @@ final class PostProcessorRegistrationDelegate {
 			 */
 			for (String ppName : postProcessorNames) {
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
-					//ppName:org.springframework.context.annotation.internalConfigurationAnnotationProcessor
-					//getBean: ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor
+					/**
+					 * ppName:org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+					 * getBean: ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor
+					 * ConfigurationClassPostProcessor  这个bean 是从初始化的时候调用AnnotationConfigUtils.registerAnnotationConfigProcessors方法实例化得到的
+					 */
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 					processedBeans.add(ppName);
 				}
