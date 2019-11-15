@@ -151,16 +151,23 @@ public abstract class AnnotationConfigUtils {
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		if (beanFactory != null) {
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
+				//AnnotationAwareOrderComparator主要能解析@Order注解和@Priority
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
+				//ContextAnnotationAutowireCandidateResolver提供处理延迟加载的功能
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}
 		}
 
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
-
+		//BeanDefinitio的注册，这里很重要，需要理解注册每个bean的类型
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
+			/**
+			 * 需要注意的是ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor,
+			 * 而 BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor
+			 * 在后面与自定义BeanFactoryPostProcessor的bean一起实例化并调用--》@PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors
+			 */
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
@@ -218,7 +225,7 @@ public abstract class AnnotationConfigUtils {
 	}
 
 	@Nullable
-	private static DefaultListableBeanFactory unwrapDefaultListableBeanFactory(BeanDefinitionRegistry registry) {
+	private static DefaultListableBeanFactory  unwrapDefaultListableBeanFactory(BeanDefinitionRegistry registry) {
 		if (registry instanceof DefaultListableBeanFactory) {
 			return (DefaultListableBeanFactory) registry;
 		}
