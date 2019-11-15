@@ -272,15 +272,41 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
+			//扫描basePackage路径下的java文件
+			//符合条件的并把它转成BeanDefinition类型
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
+				//解析scope属性
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
+				/**
+				 * 通过包扫描生成的BeanDefinition有两种
+				 * 1.通过索引生成：  AnnotatedGenericBeanDefinition extends GenericBeanDefinition
+				 * 2.通过非索引生成：ScannedGenericBeanDefinition   extends GenericBeanDefinition
+				 *
+				 * GenericBeanDefinition extends AbstractBeanDefinition
+				 *
+				 * 按道理都进入这个判断条件,为什么加这个判断条件--->不清楚
+				 */
 				if (candidate instanceof AbstractBeanDefinition) {
+					//如果这个类是AbstractBeanDefinition的子类，则为他设置默认值，比如lazy，init destory
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
+				/**
+				 * 通过包扫描生成的BeanDefinition有两种
+				 * 1.通过索引生成：  AnnotatedGenericBeanDefinition implements AnnotatedBeanDefinition
+				 * 2.通过非索引生成：ScannedGenericBeanDefinition   implements AnnotatedBeanDefinition
+				 *
+				 * 按道理都进入这个判断条件,为什么加这个判断条件--->不清楚
+				 */
 				if (candidate instanceof AnnotatedBeanDefinition) {
+					/**
+					 * 检查并且处理常用的注解
+					 * 这里的处理主要是指把常用注解的值设置到AnnotatedBeanDefinition当中
+					 * 常用注解：Lazy.class  Primary.class  Role.class  Description.class
+					 * 当前前提是这个类必须是AnnotatedBeanDefinition类型的，说白了就是加了注解的类
+					 */
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
 				if (checkCandidate(beanName, candidate)) {
@@ -288,6 +314,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
+					//加入到map当中
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}
@@ -340,6 +367,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		if (originatingDef != null) {
 			existingDef = originatingDef;
 		}
+		// 确定新 BeanDefinition 是否兼容已经存在的BeanDefinition。
 		if (isCompatible(beanDefinition, existingDef)) {
 			return false;
 		}
@@ -349,6 +377,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	}
 
 	/**
+	 * 确定新 BeanDefinition 是否兼容已经存在的BeanDefinition。
 	 * Determine whether the given new bean definition is compatible with
 	 * the given existing bean definition.
 	 * <p>The default implementation considers them as compatible when the existing

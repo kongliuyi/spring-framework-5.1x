@@ -72,6 +72,10 @@ class ConditionEvaluator {
 	}
 
 	/**
+	 * 根据{@code @Conditional}注解判断一个项目是否应该被跳过。
+	 * 目前有两个地方调用
+	 *  1.applicationContext.register
+	 *  2.applicationContext.refresh
 	 * Determine if an item should be skipped based on {@code @Conditional} annotations.
 	 * @param metadata the meta data
 	 * @param phase the phase of the call

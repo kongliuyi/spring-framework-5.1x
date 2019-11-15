@@ -62,6 +62,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
+ * 使用场景：
+ * 如果需要扫描包结束后,并需要对BeanDefinition进行逻辑处理后注册到BeanDefinitionRegistry,
+ * 可以继承ClassPathScanningCandidateComponentProvider,
+ * 重新实现逻辑,相当于类似自定义ClassPathBeanDefinitionScanner逻辑
+ *
  * A component provider that provides candidate components from a base package. Can
  * use {@link CandidateComponentsIndex the index} if it is available of scans the
  * classpath otherwise. Candidate components are identified by applying exclude and
@@ -304,11 +309,17 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 
 
 	/**
+	 * 扫描类路径以查找候选组件。
 	 * Scan the class path for candidate components.
 	 * @param basePackage the package to check for annotated classes
 	 * @return a corresponding Set of autodetected bean definitions
 	 */
 	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
+		/**
+		 *  索引（一般不建议开启 spring.index.ignore=true）
+		 *  通过ClassPathScanningCandidateComponentProvider.setResourceLoader方法
+		 *  开启索引方式：创建文件 META-INF/spring.components,内容spring.index.ignore=true
+		 */
 		if (this.componentsIndex != null && indexSupportsIncludeFilters()) {
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
 		}
@@ -418,6 +429,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
+			//asm 读取class文件
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();

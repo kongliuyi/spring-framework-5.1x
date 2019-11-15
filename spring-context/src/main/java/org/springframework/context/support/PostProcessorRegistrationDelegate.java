@@ -68,12 +68,12 @@ final class PostProcessorRegistrationDelegate {
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
 			/**
-			 * beanFactoryPostProcessors 存放自定义的
-			 *
+			 * beanFactoryPostProcessors 存放自定义的,
+			 * 目前测试我放的是CarBeanFactoryPostProcessor
 			 */
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				/**
-				 * 通过这个 看出
+				 * 通过这个看出
 				 * BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor
 				 * 一般情况下这个地方只有自定义实现 BeanFactoryPostProcessor 的类
 				 *  可以往下看了解到具体是什么。
@@ -95,7 +95,7 @@ final class PostProcessorRegistrationDelegate {
 			 * 	Separate between BeanDefinitionRegistryPostProcessors that implement
 			 * 	PriorityOrdered, Ordered, and the rest.
 			 * 	这个currentRegistryProcessors 存放的是spring自己内部实现了BeanDefinitionRegistryPostProcessor接口的类
-			 * 	例如 ConfigurationClassPostProcessor
+			 * 	例如 ConfigurationClassPostProcessor，
 			 */
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
@@ -305,6 +305,7 @@ final class PostProcessorRegistrationDelegate {
 
 	/**
 	 * 调用给定的BeanDefinitionRegistryPostProcessor bean。
+	 * 目前我发现只有ConfigurationClassPostProcessor
 	 * Invoke the given BeanDefinitionRegistryPostProcessor beans.
 	 */
 	private static void invokeBeanDefinitionRegistryPostProcessors(
