@@ -234,6 +234,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	/**
+	 * 准备在运行时服务bean请求的配置类，用cglib增强的子类替换它们。
 	 * Prepare the Configuration classes for servicing bean requests at runtime
 	 * by replacing them with CGLIB-enhanced subclasses.
 	 */
@@ -256,7 +257,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	/**
-	 * 基于注册表进行构建和验证配置模型
+	 * 基于注册 @Configuration注解   构建和验证一个配置模型
 	 * Build and validate a configuration model based on the registry of
 	 * {@link Configuration} classes.
 	 */
@@ -351,12 +352,26 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
+
+			/**
+			 * 将所有扫描出来configClasses 变成BeanDefinition 注册到bean工厂中
+			 * 这里值得注意的是扫描出来的bean当中可能包含了特殊类
+			 * 比如 parser.configClasses当中主要包含的是importSelector
+			 * 但是ImportBeanDefinitionRegistrar并不是包含在configClasses当中
+			 * 因为ImportBeanDefinitionRegistrar在扫描出来的时候
+			 * 已经被添加到一个ConfigurationClass.importBeanDefinitionRegistrars集合中当中去了
+			 * 而ConfigurationClass 是引入@Import（ImportBeanDefinitionRegistrar）的配置类 例如：AppConfig
+			 */
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 
 			candidates.clear();
+			//由于我们这里进行了扫描，把扫描出来的BeanDefinition注册给了factory
+			//所以这里 BeanDefinition 必定大于 原来的  BeanDefinition 数
 			if (registry.getBeanDefinitionCount() > candidateNames.length) {
+				//扫描并注册完后所有BeanDefinition 名称
 				String[] newCandidateNames = registry.getBeanDefinitionNames();
+				//扫描并注册完前所有BeanDefinition 名称
 				Set<String> oldCandidateNames = new HashSet<>(Arrays.asList(candidateNames));
 				Set<String> alreadyParsedClasses = new HashSet<>();
 				for (ConfigurationClass configurationClass : alreadyParsed) {
@@ -377,6 +392,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		while (!candidates.isEmpty());
 
 		// Register the ImportRegistry as a bean in order to support ImportAware @Configuration classes
+		//将ImportStack注册为bean，以支持ImportAware @Configuration类
 		if (sbr != null && !sbr.containsSingleton(IMPORT_REGISTRY_BEAN_NAME)) {
 			sbr.registerSingleton(IMPORT_REGISTRY_BEAN_NAME, parser.getImportRegistry());
 		}
@@ -384,6 +400,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		if (this.metadataReaderFactory instanceof CachingMetadataReaderFactory) {
 			// Clear cache in externally provided MetadataReaderFactory; this is a no-op
 			// for a shared cache since it'll be cleared by the ApplicationContext.
+			//清除外部提供的MetadataReaderFactory中的缓存;这是无效的
+			//对于共享缓存，因为它将被ApplicationContext清除。
 			((CachingMetadataReaderFactory) this.metadataReaderFactory).clearCache();
 		}
 	}

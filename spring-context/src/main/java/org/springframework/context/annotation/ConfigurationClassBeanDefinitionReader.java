@@ -108,6 +108,7 @@ class ConfigurationClassBeanDefinitionReader {
 
 
 	/**
+	 * 读取{@code configurationModel}，在bean工厂中注册definitions
 	 * Read {@code configurationModel}, registering bean definitions
 	 * with the registry based on its contents.
 	 */
@@ -134,14 +135,17 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		//如果一个类是被@import的，则会被spring标准，这里完成注册
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
+		//如果一个类是被 @Bean ，也就是方法上加了@Bean返回的类，这里完成注册
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
-
+		//如果方法上有@ImportedResources，装载 xml 文件上的bean注册
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+		//如果类上有@Importe(ImportBeanDefinitionRegistrar.class),这里完成注册
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 
@@ -178,6 +182,7 @@ class ConfigurationClassBeanDefinitionReader {
 		String methodName = metadata.getMethodName();
 
 		// Do we need to mark the bean as skipped by its condition?
+		//是否需要根据bean的条件将其标记为跳过?
 		if (this.conditionEvaluator.shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN)) {
 			configClass.skippedBeanMethods.add(methodName);
 			return;
@@ -190,15 +195,18 @@ class ConfigurationClassBeanDefinitionReader {
 		Assert.state(bean != null, "No @Bean annotation attributes");
 
 		// Consider name and any aliases
+		//考虑名称和别名
 		List<String> names = new ArrayList<>(Arrays.asList(bean.getStringArray("name")));
 		String beanName = (!names.isEmpty() ? names.remove(0) : methodName);
 
 		// Register aliases even when overridden
+		//即使被覆盖时也要注册别名
 		for (String alias : names) {
 			this.registry.registerAlias(beanName, alias);
 		}
 
 		// Has this effectively been overridden before (e.g. via XML)?
+		//以前是否已经有效地覆盖了这一点(例如，通过XML)?
 		if (isOverriddenByExistingDefinition(beanMethod, beanName)) {
 			if (beanName.equals(beanMethod.getConfigurationClass().getBeanName())) {
 				throw new BeanDefinitionStoreException(beanMethod.getConfigurationClass().getResource().getDescription(),

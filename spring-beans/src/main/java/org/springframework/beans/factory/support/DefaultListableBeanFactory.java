@@ -494,14 +494,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		return resolvedBeanNames;
 	}
-
+	//根据类型去factory中获取对应类的名字
+	//比如在工厂初始化的时候可以根据BeanFactory去获取所有的BeanFactoryProcessor
 	private String[] doGetBeanNamesForType(ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit) {
 		List<String> result = new ArrayList<>();
 
-		// Check all bean definitions.
+		// Check all bean definitions. 检查所有 definitions
 		for (String beanName : this.beanDefinitionNames) {
-			// Only consider bean as eligible if the bean name
-			// is not defined as alias for some other bean.
+			// Only consider bean as eligible if the bean name。只有在bean的名称符合条件时才认为bean是合格的
+			// is not defined as alias for some other bean.没有被定义为其他bean的别名。
 			if (!isAlias(beanName)) {
 				try {
 					RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);

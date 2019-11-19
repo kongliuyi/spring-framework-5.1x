@@ -534,6 +534,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Invoke factory processors registered as beans in the context.
 				/**
+				 * 这个方法很重要,就这一个方法，我几乎看看半个月时间
 				 * 调用上下文中注册为bean的工厂处理器。
 				 * 实例化并调用所有已注册的BeanFactoryPostProcessor bean，
 				 * 注意：要区分BeanFactoryPostProcessor与ProcessBeanFactory,两者不同

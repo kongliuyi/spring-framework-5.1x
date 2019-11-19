@@ -158,7 +158,8 @@ class ConfigurationClassParser {
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, resourceLoader);
 	}
 
-
+	//configCandidates：含有Configuration || Component ||
+	// ComponentScan || Import ||ImportResource的BeanDefinitionHolder
 	public void parse(Set<BeanDefinitionHolder> configCandidates) {
 		//根据BeanDefinition 的类型 做不同的处理,一般都会调用ConfigurationClassParser#parse 进行解析
 		for (BeanDefinitionHolder holder : configCandidates) {
@@ -185,7 +186,7 @@ class ConfigurationClassParser {
 						"Failed to parse configuration class [" + bd.getBeanClassName() + "]", ex);
 			}
 		}
-
+       //处理延迟加载的importSelect？为什么要延迟加载，估计就是为了延迟吧
 		this.deferredImportSelectorHandler.process();
 	}
 
@@ -218,6 +219,12 @@ class ConfigurationClassParser {
 	}
 
 
+	/**
+	 *
+	 * @param configClass 含有Configuration || Component || ComponentScan || Import
+	 *                       ||ImportResource的ConfigurationClass
+	 * @throws IOException
+	 */
 	protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
 
 		//根据{@code @Conditional}注解判断是否应该被跳过
@@ -305,6 +312,7 @@ class ConfigurationClassParser {
 					if (bdCand == null) {
 						bdCand = holder.getBeanDefinition();
 					}
+					//将扫描出来的BeanDefinition，进行检查是否有配置类（具体注解点进去看），然后执行类似AppConfig解析操作
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
 					}
@@ -313,6 +321,16 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @Import annotations  执行所有@Import注解
+		/**
+		 * 这里处理的import是需要判断我们的类当中时候有@Import注解
+		 * 如果有这把@Import当中的值拿出来，是一个类
+		 * 比如@Import(xxxxx.class)，那么这里便把xxxxx传进去进行解析
+		 * 在解析的过程中如果发觉是一个importSelector那么就回调selector的方法
+		 * 返回一个字符串（类名），通过这个字符串得到一个类
+		 * 继而在递归调用本方法来处理这个类
+		 *
+		 * 判断一组类是不是imports（3种import）
+		 */
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
 		// Process any @ImportResource annotations
@@ -553,6 +571,20 @@ class ConfigurationClassParser {
 		}
 	}
 
+
+	/**
+	 * @Import 三种类型:
+	 *          1. ImportSelector：进入 ImportSelector ，通过ImportSelector生成的类递归进入 else
+	 *          也就是当成含有 @Configuration 注解的类处理,都放入configurationClasses 集合中
+	 *          2. ImportBeanDefinitionRegistrar：进入 ImportBeanDefinitionRegistrar，
+	 *          放入ImportBeanDefinitionRegistrars集合中
+	 *          3. 直接当成 含有 @Configuration 注解的类处理
+	 *
+	 * @param configClass
+	 * @param currentSourceClass
+	 * @param importCandidates
+	 * @param checkForCircularImports
+	 */
 	private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass,
 			Collection<SourceClass> importCandidates, boolean checkForCircularImports) {
 
@@ -560,10 +592,13 @@ class ConfigurationClassParser {
 			return;
 		}
 
+		 //检查在堆栈中是存在着configClass，如果存在就进行一些判断
+		 // 以后有机会 研究一下 importStack  的数据结构，先标记一下。
 		if (checkForCircularImports && isChainedImportOnStack(configClass)) {
 			this.problemReporter.error(new CircularImportProblem(configClass, this.importStack));
 		}
 		else {
+			//将 configClass 放入 堆栈中
 			this.importStack.push(configClass);
 			try {
 				for (SourceClass candidate : importCandidates) {
@@ -573,6 +608,9 @@ class ConfigurationClassParser {
 						ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
+						//  DeferredImportSelector   extends ImportSelector,
+						//  如果属于DeferredImportSelector 就放入延迟 ImportSelector,具体作用
+						//  可以参考后面
 						if (selector instanceof DeferredImportSelector) {
 							this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
 						}
@@ -590,13 +628,26 @@ class ConfigurationClassParser {
 								BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								registrar, this.environment, this.resourceLoader, this.registry);
+						//添加到一个list当中和importselector不同
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
 					else {
 						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
 						// process it as an @Configuration class
+						//如果 Candidate 既不是不是ImportSelector类型 也不是 ImportBeanDefinitionRegistrar类型
+						//就把Candidate 当做 含有 @Configuration 注解的类处理
 						this.importStack.registerImport(
 								currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
+						/**
+						 * processConfigurationClass里面主要就是把类放到configurationClasses
+						 * configurationClasses是一个集合，会在后面拿出来解析成bd继而注册
+						 * 可以看到普通类在扫描出来的时候就被注册了
+						 * 如果是importSelector，会先放到configurationClasses后面进行出来注册
+						 * 注意：ImportBeanDefinitionRegistrar和importSelector不同，
+						 * ImportBeanDefinitionRegistrar是永远不会进入 else 这个地方，因为他Import 生成的类并没有递归进入这个方法
+						 * 他是在elseIf ImportBeanDefinitionRegistrar中 放入importBeanDefinitionRegistrars集合中
+						 *
+						 */
 						processConfigurationClass(candidate.asConfigClass(configClass));
 					}
 				}
@@ -615,6 +666,11 @@ class ConfigurationClassParser {
 		}
 	}
 
+	/**
+	 *  检查在堆栈中是存在着configClass，如果存在就进行一些判断
+	 * @param configClass
+	 * @return
+	 */
 	private boolean isChainedImportOnStack(ConfigurationClass configClass) {
 		if (this.importStack.contains(configClass)) {
 			String configClassName = configClass.getMetadata().getClassName();

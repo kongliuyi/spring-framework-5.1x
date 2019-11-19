@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import;
 @ComponentScan("net.riking")
 @Conditional(MyConditional.class)
 @Mapper
+@Import(MyImportSelector.class)
 public class AppConfig {
 
 

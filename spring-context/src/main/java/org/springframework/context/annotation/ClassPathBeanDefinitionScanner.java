@@ -309,6 +309,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 					 */
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
+				//1.检查 BeanDefinition在工厂中是否已经存在BeanDefinition，否->返回true，是进入2
+				//2.确定新 BeanDefinition 是否兼容已经存在的BeanDefinition。
 				if (checkCandidate(beanName, candidate)) {
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
 					definitionHolder =
