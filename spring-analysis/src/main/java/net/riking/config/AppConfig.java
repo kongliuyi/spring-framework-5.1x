@@ -1,10 +1,8 @@
 package net.riking.config;
 
 import net.riking.annotation.Mapper;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import net.riking.bean.Dog;
+import org.springframework.context.annotation.*;
 
 @Configuration
 @ComponentScan("net.riking")
@@ -13,5 +11,16 @@ import org.springframework.context.annotation.Import;
 @Import(MyImportSelector.class)
 public class AppConfig {
 
+	@Bean
+	public Dog  dogBean(){
+
+		return new Dog();
+	}
+
+	@Bean
+	public String  dogString(){
+		dogBean();
+		return "xxxx";
+	}
 
 }
