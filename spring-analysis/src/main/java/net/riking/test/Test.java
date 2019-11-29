@@ -14,8 +14,8 @@ public class Test {
 		applicationContext.addBeanFactoryPostProcessor(new CarBeanFactoryPostProcessor());
 		applicationContext.refresh();
 		/*AopBean aopBean = (AopBean) applicationContext.getBean("aopBean");
-		aopBean.testAop();
+		aopBean.testAop();*/
 		UserDao userDao= (UserDao) applicationContext.getBean("userDao");
-		userDao.findUserList();*/
+		userDao.findUserList();
 	}
 }

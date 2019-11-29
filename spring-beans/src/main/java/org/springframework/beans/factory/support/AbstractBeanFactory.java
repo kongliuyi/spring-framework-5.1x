@@ -147,7 +147,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/** String resolvers to apply e.g. to annotation attribute values. */
 	private final List<StringValueResolver> embeddedValueResolvers = new CopyOnWriteArrayList<>();
 
-	/** BeanPostProcessors to apply in createBean. 在创建Bean中调用BeanPostProcessor*/
+	/** BeanPostProcessors to apply in createBean. 在创建Bean中调用BeanPostProcessor,这里存放着所有的BeanPostProcessor*/
 	private final List<BeanPostProcessor> beanPostProcessors = new CopyOnWriteArrayList<>();
 
 	/** Indicates whether any InstantiationAwareBeanPostProcessors have been registered. */
@@ -254,7 +254,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		// Eagerly check singleton cache for manually registered singletons.
 		/**
-		 * 从缓存中获取单利的bean
+		 * 从缓存中获取单例的bean
 		 * 这个方法在初始化的时候会调用，在getBean的时候也会调用
 		 * 例如：currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 		 * 为什么需要这么做呢？
@@ -265,7 +265,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		 * 由于方法会在spring环境初始化的时候（就是对象被创建的时候调用一次）调用一次
 		 * 还会在getBean的时候调用一次
 		 * 所以再调试的时候需要特别注意，不能直接断点在这里，
-		 * 需要先进入到annotationConfigApplicationContext.getBean(IndexDao.class)
+		 * 需要先进入到annotationConfigApplicationContext.getBean(AppCpnfig.class)
 		 * 之后再来断点，这样就确保了我们是在获取这个bean的时候调用的
 		 *
 		 * 需要说明的是在初始化时候调用一般都是返回null

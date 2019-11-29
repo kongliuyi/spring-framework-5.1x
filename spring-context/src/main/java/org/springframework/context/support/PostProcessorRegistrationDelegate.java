@@ -132,7 +132,7 @@ final class PostProcessorRegistrationDelegate {
 			//合并list，将自定义的和spring内部的BeanDefinitionRegistryPostProcessor放在一起
 			registryProcessors.addAll(currentRegistryProcessors);
 
-			//执行所有非自定义BeanDefinitionRegistryPostProcessor ---我感觉这一步很重要
+			//执行所有非自定义BeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry ---我感觉这一步很重要
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 
 			//执行完成了所有非自定义BeanDefinitionRegistryPostProcessor

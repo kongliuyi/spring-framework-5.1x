@@ -542,7 +542,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
-				//注册beanPostProcessor
+				//注册所有beanPostProcessor（放入AbstractBeanFactory.beanPostProcessors集合）
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
@@ -784,7 +784,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		else {
 			// Use empty MessageSource to be able to accept getMessage calls.
 			DelegatingMessageSource dms = new DelegatingMessageSource();
-			dms.setParentMessageSource(getInternalParentMessageSource());
+			// getInternalParentMessageSource() = ApplicationContext
+ 			dms.setParentMessageSource(getInternalParentMessageSource());
 			this.messageSource = dms;
 			beanFactory.registerSingleton(MESSAGE_SOURCE_BEAN_NAME, this.messageSource);
 			if (logger.isTraceEnabled()) {
@@ -1362,6 +1363,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	@Nullable
 	protected MessageSource getInternalParentMessageSource() {
+		//getParent()=this.ApplicationContext
 		return (getParent() instanceof AbstractApplicationContext ?
 				((AbstractApplicationContext) getParent()).messageSource : getParent());
 	}
