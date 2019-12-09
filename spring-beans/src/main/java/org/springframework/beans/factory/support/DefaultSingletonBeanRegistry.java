@@ -174,7 +174,15 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+		//从map中获取bean如果不为空直接返回，不再进行初始化工作
+		//这里一般普通类（通过扫描包）都是为空的
 		Object singletonObject = this.singletonObjects.get(beanName);
+		/**
+		 * isSingletonCurrentlyInCreation(beanName)，这一步的主要作用
+		 * 是判断singletonsCurrentlyInCreation集合是否存在当前是否正在创建指定的单例bean
+		 * 这里一般是 false，主要原因是 该bean 目前还不满足条件初始化，
+		 * 必须要进行进一步校验（代码继续读下去就知道了）
+		 */
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
 				singletonObject = this.earlySingletonObjects.get(beanName);
@@ -212,6 +220,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				if (logger.isDebugEnabled()) {
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
+				/**
+				 * 将beanName添加到singletonsCurrentlyInCreation这样一个set集合中
+				 * 表示beanName对应的bean正在创建中
+				 *
+				 * 和之前的类似，这里已经完成进一步校验了，符合了创建bean的规则了
+				 */
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;
 				boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
@@ -242,9 +256,16 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (recordSuppressedExceptions) {
 						this.suppressedExceptions = null;
 					}
+					// 最后这里要beanName从singletonsCurrentlyInCreation移除
 					afterSingletonCreation(beanName);
 				}
 				if (newSingleton) {
+					/**
+					 * 			this.singletonObjects.put(beanName, singletonObject);
+					 * 			this.singletonFactories.remove(beanName);
+					 * 			this.earlySingletonObjects.remove(beanName);
+					 * 			this.registeredSingletons.add(beanName);
+					 */
 					addSingleton(beanName, singletonObject);
 				}
 			}
@@ -329,6 +350,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	}
 
 	/**
+	 * 在单例创建之前回调。
 	 * Callback before singleton creation.
 	 * <p>The default implementation register the singleton as currently in creation.
 	 * @param beanName the name of the singleton about to be created

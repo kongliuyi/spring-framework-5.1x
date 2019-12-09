@@ -41,7 +41,6 @@ public class MapperFactoryBean<T>  implements FactoryBean<T>, InvocationHandler 
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		Select annotation = method.getAnnotation(Select.class);
 		System.out.println(annotation.value()[0]);
-
 		return null;
 	}
 }

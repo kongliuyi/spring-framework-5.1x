@@ -617,6 +617,8 @@ class ConfigurationClassParser {
 						else {
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
+							//检查 是否 有通过 ImportSelector 生成的类上是否有实现了ImportSelector或者ImportBeanDefinitionRegistrars
+							//有则递归调用
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
 					}

@@ -298,7 +298,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
 			/**
-			 * 如果我们已经创建这个bean实例失败
 			 * 检查要获取的bean是不是当前线程正在创建中的原型bean,（如果是原型的情况下，正常创建的Bean会将beanName放入ThreadLocal中）
 			 * 如果是原型不应该在初始化的时候创建
 			 */
@@ -307,7 +306,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			// Check if bean definition exists in this factory.
-			//检查当前BeanFactory的父类BeanFactory是不是不为空，并且要获取的bean不包含在当前BeanFactory中
+			//检查当前BeanFactory的父类parentBeanFactory是不是不为空，我没有改造过BeanFactory所以这里是空
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
@@ -340,8 +339,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			try {
 				//合并要获取的bean的属性并把属性赋值给一个RootBeanDefinition
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
-				//检查合并之后的RootBeanDefinition的是不是抽象的，还会检查如果获取bean的参数不空的情况下，bean的类型是singleton的就会报错，
-				// 因为单例情况下bean都是一样的，只有原型（prototype）情况下才能不一致
+				/**
+				 * 检查合并之后的RootBeanDefinition的是不是抽象的,mbd.isAbstract()
+				 */
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
