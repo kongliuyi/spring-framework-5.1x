@@ -179,7 +179,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		Object singletonObject = this.singletonObjects.get(beanName);
 		/**
 		 * isSingletonCurrentlyInCreation(beanName)，这一步的主要作用
-		 * 是判断singletonsCurrentlyInCreation集合是否存在当前是否正在创建指定的单例bean
+		 * 是判断singletonsCurrentlyInCreation集合是否存在当前正在创建指定的单例bean
 		 * 这里一般是 false，主要原因是 该bean 目前还不满足条件初始化，
 		 * 必须要进行进一步校验（代码继续读下去就知道了）
 		 */

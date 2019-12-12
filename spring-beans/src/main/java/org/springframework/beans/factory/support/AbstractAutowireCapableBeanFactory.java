@@ -484,6 +484,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Make sure bean class is actually resolved at this point, and
 		// clone the bean definition in case of a dynamically resolved Class
 		// which cannot be stored in the shared merged bean definition.
+		/**
+		 * 确保此时bean的类已经解析，并且在动态解析类的情况下，克隆 beanDefinition
+		 * 不能存储在共享的合并beanDefinition中。这个方法有点复杂，投绕晕了，以后再看
+		 */
 		Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
 		if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
 			mbdToUse = new RootBeanDefinition(mbd);
@@ -578,6 +582,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Allow post-processors to modify the merged bean definition.
+		//允许后处理程序修改合并的beanDefinition
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
@@ -1091,6 +1096,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
 			if (bp instanceof MergedBeanDefinitionPostProcessor) {
 				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;
+				/**
+				 * 在实例化后实例化之前，spring内部提供三个后置处理器
+				 * 1.ApplicationListenerDetector:将（beanName,isSingleton）放入singletonNames 集合中
+				 * 2.AutowiredAnnotationBeanPostProcessor: 校验、封装处理含有Autowired等注解修饰的字段和方法属性
+				 * 3.CommonAnnotationBeanPostProcessor：校验、封装处理含有Resource等注解修饰的字段和方法属性
+				 * 看源码 第三个可以仿造第二个看
+				 */
 				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 			}
 		}
@@ -1299,10 +1311,20 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	@Nullable
 	protected Constructor<?>[] determineConstructorsFromBeanPostProcessors(@Nullable Class<?> beanClass, String beanName)
 			throws BeansException {
-
+		//SmartInstantiationAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessor
 		if (beanClass != null && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
+					/**
+					 * 目前spring内部只有这四个，其中三个是空壳方法
+					 * ConfigurationClassPostProcessor$ImportAwareBeanPostProcessor
+					 * AbstractAutoProxyCreator
+					 * InstantiationAwareBeanPostProcessorAdapter
+					 *
+					 * 最重要看下面这个
+					 * AutowiredAnnotationBeanPostProcessor
+					 *
+					 */
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
 					Constructor<?>[] ctors = ibp.determineCandidateConstructors(beanClass, beanName);
 					if (ctors != null) {
@@ -1330,7 +1352,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						getAccessControlContext());
 			}
 			else {
-				//默认情况下是得到一个反射的实例化策略
+				//getInstantiationStrategy()得到类的实例化策略 ，默认情况下是得到一个反射的实例化策略
 				beanInstance = getInstantiationStrategy().instantiate(mbd, beanName, parent);
 			}
 			BeanWrapper bw = new BeanWrapperImpl(beanInstance);

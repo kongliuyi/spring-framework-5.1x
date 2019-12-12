@@ -87,6 +87,7 @@ public class InjectionMetadata {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Processing injected element of bean '" + beanName + "': " + element);
 				}
+				//element==AutowiredMethodElement,
 				element.inject(target, beanName, pvs);
 			}
 		}
@@ -173,10 +174,11 @@ public class InjectionMetadata {
 		 */
 		protected void inject(Object target, @Nullable String requestingBeanName, @Nullable PropertyValues pvs)
 				throws Throwable {
-
+			//是字段
 			if (this.isField) {
 				Field field = (Field) this.member;
-				ReflectionUtils.makeAccessible(field);
+				//使给定字段可访问，并显式地将其设置为可访问
+				ReflectionUtils.makeAccessible(field);//field.setAccessible(true);
 				field.set(target, getResourceToInject(target, requestingBeanName));
 			}
 			else {
