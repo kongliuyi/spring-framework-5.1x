@@ -9,25 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * by_no 情况下 默认
- *
- */
-@Service
+
 public class Cat {
-	@Autowired
-	DogDao dogDooo;
-
-	@Autowired
-	IDogService dogService;
-
-	public void setDog1(DogDao dogDooo) {
-		this.dogDooo = dogDooo;
-	}
-
-	public void setDogService1222(IDogService iDogService1) {
-		this.dogService = iDogService1;
-	}
 
 	public static void main(String[] args) {
 		ExecutorService executorService = Executors.newSingleThreadExecutor();

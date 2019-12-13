@@ -507,9 +507,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.。
 			/**
+			 * 应用实例化前后处理程序，解决是否存在指定bean的实例化前快捷方式。
 			 * 如果存在实现InstantiationAwareBeanPostProcessor  的后置处理器，
-			 * 则所有的bean有可能不能执行后面的功能代码，例如
-			 * 属性赋值，其他后置处理器等等
+			 * 如果返回的结果不为空，则所有的bean有可能不能执行后面的功能代码，例如
+			 * 属性赋值（属性注入），其他后置处理器方法等等
 			 */
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
@@ -1101,7 +1102,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				 * 1.ApplicationListenerDetector:将（beanName,isSingleton）放入singletonNames 集合中
 				 * 2.AutowiredAnnotationBeanPostProcessor: 校验、封装处理含有Autowired等注解修饰的字段和方法属性
 				 * 3.CommonAnnotationBeanPostProcessor：校验、封装处理含有Resource等注解修饰的字段和方法属性
-				 * 看源码 第三个可以仿造第二个看
+				 * 看第三个后置处理器 可以仿造第二个看
 				 */
 				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 			}
@@ -1200,7 +1201,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		/**
 		 * 从spring的原始注释可以知道这个是一个Shortcut(快捷键)，什么意思呢？
 		 * 当多次构建同一个 bean 时，可以使用这个Shortcut，
-		 * 也就是说不在需要次推断应该使用哪种方式构造bean
+		 * 也就是说不在需要每次推断应该使用哪种方式构造bean
 		 *  比如在多次构建同一个prototype类型的 bean 时，就可以走此处的Shortcut
 		 * 这里的 resolved 和 mbd.constructorArgumentsResolved 将会在 bean 第一次实例
 		 * 化的过程中被设置，后面来证明
@@ -1411,6 +1412,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	@SuppressWarnings("deprecation")  // for postProcessPropertyValues
 	protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable BeanWrapper bw) {
+		//如果属性存在但是需要注入的对象为空，则抛出异常。
 		if (bw == null) {
 			if (mbd.hasPropertyValues()) {
 				throw new BeanCreationException(
@@ -1425,6 +1427,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Give any InstantiationAwareBeanPostProcessors the opportunity to modify the
 		// state of the bean before properties are set. This can be used, for example,
 		// to support styles of field injection.
+		//使得InstantiationAwareBeanPostProcessors有机会在属性注入之前修改bean的状态，
+		// 例如支持一些属性类型的注入。
 		boolean continueWithPropertyPopulation = true;
 
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
@@ -1442,21 +1446,26 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (!continueWithPropertyPopulation) {
 			return;
 		}
-
+		//获取容器在解析BeanDefinition资源时为BeanDefiniton中设置的属性值
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
+		//对依赖注入处理，首先处理autowiring自动装配的依赖注入--->如果没有处理过，默认是BY_NO
+		//这个地方一般是通过 xml 配置 或者 通过 干预工厂BeanDefinition，并不是通过注解。  以后写一个案例放博客，标记一下
 		if (mbd.getResolvedAutowireMode() == AUTOWIRE_BY_NAME || mbd.getResolvedAutowireMode() == AUTOWIRE_BY_TYPE) {
 			MutablePropertyValues newPvs = new MutablePropertyValues(pvs);
 			// Add property values based on autowire by name if applicable.
+			//根据autowire的名称添加属性值(如果适用)。---ByName
 			if (mbd.getResolvedAutowireMode() == AUTOWIRE_BY_NAME) {
 				autowireByName(beanName, mbd, bw, newPvs);
 			}
 			// Add property values based on autowire by type if applicable.
+			//根据autowire的类型添加属性值(如果适用)。---ByType
 			if (mbd.getResolvedAutowireMode() == AUTOWIRE_BY_TYPE) {
 				autowireByType(beanName, mbd, bw, newPvs);
 			}
 			pvs = newPvs;
 		}
+
 
 		boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();
 		boolean needsDepCheck = (mbd.getDependencyCheck() != AbstractBeanDefinition.DEPENDENCY_CHECK_NONE);
@@ -1491,6 +1500,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (pvs != null) {
+			//对属性进行注入
 			applyPropertyValues(beanName, mbd, bw, pvs);
 		}
 	}
@@ -1507,11 +1517,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected void autowireByName(
 			String beanName, AbstractBeanDefinition mbd, BeanWrapper bw, MutablePropertyValues pvs) {
 
+		//对Bean对象中非set方法、非简单属性(CharSequence类型、Number类型、Date类型、URL类型、URI类型、Locale类型、Class类型就会忽略)进行处理
 		String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
 		for (String propertyName : propertyNames) {
+			// 如果Spring IOC容器中包含指定名称的Bean
 			if (containsBean(propertyName)) {
+			//调用getBean方法向IOC容器索取指定名称的Bean实例，迭代触发属性的初始化和依赖注入
 				Object bean = getBean(propertyName);
+				//添加到 MutablePropertyValues中，这个在后面做赋值用
 				pvs.add(propertyName, bean);
+				//指定名称属性注册依赖Bean名称，进行属性依赖注入，
+				// 目的是以后有同样的属性注入，可以直接获取，可以往前面看
 				registerDependentBean(propertyName, beanName);
 				if (logger.isTraceEnabled()) {
 					logger.trace("Added autowiring by name from bean name '" + beanName +
@@ -1593,6 +1609,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		PropertyValues pvs = mbd.getPropertyValues();
 		PropertyDescriptor[] pds = bw.getPropertyDescriptors();
 		for (PropertyDescriptor pd : pds) {
+
+			/**
+			 * WriteMethod ：就是含 set 的方法，
+			 * isExcludedFromDependencyCheck：确定给定的bean属性是否被排除在依赖项检查之外。
+			 * !pvs.contains(pd.getName())：排除已经存在的情况下，例如spring-mybatis框架例子-以写博客后标记一下
+			 * !BeanUtils.isSimpleProperty(pd.getPropertyType())：排除Bean中非简单属性的属性，例如：
+			 * CharSequence类型、Number类型、Date类型、URL类型、URI类型、Locale类型、Class类型就会忽略
+			 */
 			if (pd.getWriteMethod() != null && !isExcludedFromDependencyCheck(pd) && !pvs.contains(pd.getName()) &&
 					!BeanUtils.isSimpleProperty(pd.getPropertyType())) {
 				result.add(pd.getName());

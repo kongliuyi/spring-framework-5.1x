@@ -19,6 +19,9 @@ public class CarBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 		String[] beanNames = beanFactory.getBeanDefinitionNames();
 		for (String beanName : beanNames) {
 			AbstractBeanDefinition definition = (AbstractBeanDefinition) beanFactory.getBeanDefinition(beanName);
+			 if("injectByNameService".equals(beanName))definition.setAutowireMode(1);
+			 if("injectByTypeService".equals(beanName))definition.setAutowireMode(2);
+			if("injectAutowiredByNameService".equals(beanName))definition.setAutowireMode(1);
 			System.out.println(beanName+"---"+definition.getAutowireMode());
 			StringValueResolver valueResolver = strVal -> {
 				return strVal;
