@@ -1,10 +1,5 @@
 package net.riking.bean;
 
-import net.riking.dao.DogDao;
-import net.riking.service.IDogService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

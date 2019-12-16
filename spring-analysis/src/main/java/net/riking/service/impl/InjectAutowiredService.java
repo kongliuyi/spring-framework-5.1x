@@ -3,6 +3,7 @@ package net.riking.service.impl;
 import net.riking.dao.DogDao;
 import net.riking.service.IDogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
+@Scope
 public class InjectAutowiredService {
 	@Autowired
 	DogDao dogDooo;

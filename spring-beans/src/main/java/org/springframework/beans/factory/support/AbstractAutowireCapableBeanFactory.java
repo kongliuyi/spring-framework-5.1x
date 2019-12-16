@@ -509,7 +509,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			/**
 			 * 应用实例化前后处理程序，解决是否存在指定bean的实例化前快捷方式。
 			 * 如果存在实现InstantiationAwareBeanPostProcessor  的后置处理器，
-			 * 如果返回的结果不为空，则所有的bean有可能不能执行后面的功能代码，例如
+			 * 且返回的结果不为空，则所有的bean有可能不能执行后面的功能代码，例如
 			 * 属性赋值（属性注入），其他后置处理器方法等等
 			 */
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
@@ -583,7 +583,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Allow post-processors to modify the merged bean definition.
-		//允许后处理程序修改合并的beanDefinition
+		//允许后置处理器修改合并的beanDefinition
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {

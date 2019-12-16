@@ -2,12 +2,10 @@ package net.riking.inject;
 
 import net.riking.bean.CarBeanFactoryPostProcessor;
 import net.riking.config.AppConfig;
-import net.riking.service.impl.InjectAutowiredByNameService;
-import net.riking.service.impl.InjectAutowiredService;
-import net.riking.service.impl.InjectByTypeService;
-import net.riking.service.impl.InjectByNameService;
+import net.riking.service.impl.*;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
 
 public class Inject {
 	/**
@@ -64,6 +62,16 @@ public class Inject {
 		applicationContext.refresh();
 		InjectAutowiredByNameService injectAutowiredByNameService = (InjectAutowiredByNameService) applicationContext.getBean("injectAutowiredByNameService");
 		injectAutowiredByNameService.query();
+	}
+
+	@Test
+	public   void methodInject(){
+		AnnotationConfigApplicationContext applicationContext=new AnnotationConfigApplicationContext();
+		applicationContext.register(AppConfig.class);
+		applicationContext.refresh();
+		PrototypeServiceImpl prototypeServiceImpl= (PrototypeServiceImpl) applicationContext.getBean("prototypeServiceImpl");
+		prototypeServiceImpl.query();
+		prototypeServiceImpl.query();
 	}
 
 }
