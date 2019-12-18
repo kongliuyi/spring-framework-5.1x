@@ -244,7 +244,21 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		this.injectionMetadataCache.remove(beanName);
 	}
 
-	//为自动依赖注入装配Bean选择合适的构造方法
+	/**
+	 * 为自动依赖注入装配的Bean 选择合适的构造方法
+	 * 这里分为两种方式（获取构造函数优先级从上往下）
+	 * Autowired注解：
+	 *
+	 *
+	 * 非Autowired注解：
+	 *     1.构造函数只有一个并且这个构造函数不是无参构造
+	 *     2.有两个构造函数（非合成），一个是主构造函数（Primary），一个是无参构造，两种要
+	 *     3.构造函数（非合成）只有一个，并且构造函数被@Primary修饰
+	 * @param beanClass
+	 * @param beanName
+	 * @return
+	 * @throws BeanCreationException
+	 */
 	@Override
 	@Nullable
 	public Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, final String beanName)
@@ -300,11 +314,12 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					Constructor<?> requiredConstructor = null;
 					//默认的构造方法
 					Constructor<?> defaultConstructor = null;
-					// 默认的构造方法,被@Primary注解
+					// 主构造方法,开始以为是被@Primary注解的构造函数，后来发现并不是。
 					Constructor<?> primaryConstructor = BeanUtils.findPrimaryConstructor(beanClass);
 					int nonSyntheticConstructors = 0;
 					//遍历所有的构造方法，检查是否添加了autowire注解，以及是否指定了required属性
 					for (Constructor<?> candidate : rawCandidates) {
+						//此构造函数是合成构造函数,若不是 nonSyntheticConstructors++
 						if (!candidate.isSynthetic()) {
 							nonSyntheticConstructors++;
 						}
@@ -376,13 +391,23 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						//将候选构造方法集合转换为数组
 						candidateConstructors = candidates.toArray(new Constructor<?>[0]);
 					}
+					// 如果构造函数只有一个并且构造函数的参数有多个
 					else if (rawCandidates.length == 1 && rawCandidates[0].getParameterCount() > 0) {
 						candidateConstructors = new Constructor<?>[] {rawCandidates[0]};
 					}
+					/**
+					 * 这里的意思是 有两个不是合成的构造函数，一个是主构造函数，一个是无参构造
+					 * 满足如下四要素：
+					 * 1.不是合成构造函数有两个
+					 * 2.主构造函数不为null
+					 * 3.默认构造函数不为null
+					 * 4.默认构造函数与主构造函数标不是同一个
+					 */
 					else if (nonSyntheticConstructors == 2 && primaryConstructor != null &&
 							defaultConstructor != null && !primaryConstructor.equals(defaultConstructor)) {
 						candidateConstructors = new Constructor<?>[] {primaryConstructor, defaultConstructor};
 					}
+					//有一个不是合成的构造函数且这个函数是主构造函数
 					else if (nonSyntheticConstructors == 1 && primaryConstructor != null) {
 						candidateConstructors = new Constructor<?>[] {primaryConstructor};
 					}

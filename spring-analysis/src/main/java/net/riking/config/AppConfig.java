@@ -1,6 +1,7 @@
 package net.riking.config;
 
 import net.riking.annotation.Mapper;
+import net.riking.bean.Cat;
 import net.riking.bean.Dog;
 import org.springframework.context.annotation.*;
 
@@ -18,9 +19,15 @@ public class AppConfig {
 	}
 
 	@Bean
-	public String  dogString(){
-		dogBean();
-		return "xxxx";
+	public String  catStringOne(){
+
+		return "catStringOne";
+	}
+
+	@Bean
+	public String  catStringTwo(){
+
+		return "catStringTwo";
 	}
 
 }
