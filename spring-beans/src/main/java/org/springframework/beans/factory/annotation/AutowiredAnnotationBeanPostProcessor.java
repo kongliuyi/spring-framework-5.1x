@@ -246,14 +246,24 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	/**
 	 * 为自动依赖注入装配的Bean 选择合适的构造方法
+	 * 注意：该方法返回的Constructor<?>[]，是数组，所以可以有多个
 	 * 这里分为两种方式（获取构造函数优先级从上往下）
 	 * Autowired注解：
-	 *
+	 *      注意：
+	 *      （1）当一个构造函数有@Autowired（required=true）的注解，其他构造就不能有@Autowired注解.
+	 *      哪怕是@Autowired（required=false）也不允许
+	 *      （2）如果该类带"$$"就会检查代理的原始类构造方法
+	 *      1.优先选择构造函数带@Autowired。只能有两种选择-单个@Autowired（required=true）
+	 *        或者全部是@Autowired（required=false）
+	 *      2.如果构造函数全部是@Autowired（required=false）的注解，且有无参构造函数
+	 *      就将无参构造也放进返回数组中
 	 *
 	 * 非Autowired注解：
 	 *     1.构造函数只有一个并且这个构造函数不是无参构造
 	 *     2.有两个构造函数（非合成），一个是主构造函数（Primary），一个是无参构造，两种要
 	 *     3.构造函数（非合成）只有一个，并且构造函数被@Primary修饰
+	 *
+	 *   Autowired注解 与 非Autowired注解 不能共存，没有Autowired注解才会选择非Autowired注解方式
 	 * @param beanClass
 	 * @param beanName
 	 * @return
@@ -300,7 +310,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				if (candidateConstructors == null) {
 					Constructor<?>[] rawCandidates;
 					try {
-						//通过JDK反射机制，获取指定类的中所有声明的构造方法
+						//通过JDK反射机制，获取指定类的中所有声明的构造方法,
+						//如果有无参构造方法好像会把无参构造方法放至最后
 						rawCandidates = beanClass.getDeclaredConstructors();
 					}
 					catch (Throwable ex) {
@@ -314,7 +325,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					Constructor<?> requiredConstructor = null;
 					//默认的构造方法
 					Constructor<?> defaultConstructor = null;
-					// 主构造方法,开始以为是被@Primary注解的构造函数，后来发现并不是。
+					// 主构造方法,开始以为是被@Primary注解的构造函数，后来发现并不是。这个不懂，一般获取的是null
 					Constructor<?> primaryConstructor = BeanUtils.findPrimaryConstructor(beanClass);
 					int nonSyntheticConstructors = 0;
 					//遍历所有的构造方法，检查是否添加了autowire注解，以及是否指定了required属性
@@ -328,7 +339,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						}
 						//获取指定类中所有关于autowire的注解(Annotation)
 						AnnotationAttributes ann = findAutowiredAnnotation(candidate);
-						//如果指定类中没有antowire的注解
+						//如果指定类中没有autowire的注解
 						if (ann == null) {
 							Class<?> userClass = ClassUtils.getUserClass(beanClass);
 							if (userClass != beanClass) {
@@ -342,8 +353,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 								}
 							}
 						}
-						//如果指定类中有关于antowire的注解
+						//此构造函数中有@antowire的注解
 						if (ann != null) {
+							//结合下文，这里可以说明构造方法只能有一个带@Autowired（required=true）的注解
 							if (requiredConstructor != null) {
 								throw new BeanCreationException(beanName,
 										"Invalid autowire-marked constructor: " + candidate +
@@ -354,7 +366,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 							boolean required = determineRequiredStatus(ann);
 							//如果获取到autowire注解中required的属性值
 							if (required) {
-								//如果候选构造方法集合不为空
+								//如果候选构造方法集合不为空，
+								//结合上文，这里可以说明构造方法只能有一个带@Autowired（required=true）的注解,
+								//并且不能有其他的注解，例如@Autowired（required=false）
 								if (!candidates.isEmpty()) {
 									throw new BeanCreationException(beanName,
 											"Invalid autowire-marked constructors: " + candidates +
@@ -364,10 +378,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 								//当前的构造方法就是required属性所配置的构造方法
 								requiredConstructor = candidate;
 							}
-							//将当前的构造方法添加到哦啊候选构造方法集合中
+							//将当前的构造方法添加候选构造方法集合中
 							candidates.add(candidate);
 						}
-						//如果构造函数参数列表为空
+						//如果构造函数参数列表为空，也就是有无参构造函数
 						else if (candidate.getParameterCount() == 0) {
 							defaultConstructor = candidate;
 						}
@@ -375,7 +389,14 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					//如果候选构造方法集合不为空
 					if (!candidates.isEmpty()) {
 						// Add default constructor to list of optional constructors, as fallback.
-						//如果所有的构造方法都没有配置required属性，且有默认构造方法
+						/**
+						 * 将默认构造函数作为回退添加到可选构造函数列表中。
+						 * 判断条件：
+						 * 所有的构造方法有autowire的注解但是required不等于true，
+						 * 并且有无参构造方法
+						 * 结果：
+						 * 将无参构造方法 添加进去
+						 */
 						if (requiredConstructor == null) {
 							if (defaultConstructor != null) {
 								//将默认构造方法添加到候选构造方法列表
