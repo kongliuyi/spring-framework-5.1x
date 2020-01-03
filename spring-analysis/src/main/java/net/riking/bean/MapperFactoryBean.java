@@ -9,6 +9,8 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 
 public class MapperFactoryBean<T>  implements FactoryBean<T>, InvocationHandler {
+	private  Dog dog;
+
 	private Class<T> mapperInterface;
 
 	private boolean addToConfig = true;
@@ -37,10 +39,15 @@ public class MapperFactoryBean<T>  implements FactoryBean<T>, InvocationHandler 
 		return true;
 	}
 
+	public void setDog(Dog dog) {
+		this.dog = dog;
+	}
+
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		Select annotation = method.getAnnotation(Select.class);
-		System.out.println(annotation.value()[0]);
+		System.out.println(annotation.value()[0]+"---"+dog);
 		return null;
 	}
+
 }

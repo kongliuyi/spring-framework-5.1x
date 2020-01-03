@@ -180,8 +180,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		/**
 		 * isSingletonCurrentlyInCreation(beanName)，这一步的主要作用
 		 * 是判断singletonsCurrentlyInCreation集合是否存在当前正在创建指定的单例bean
-		 * 这里一般是 false，主要原因是 该bean 目前还不满足条件初始化，
-		 * 必须要进行进一步校验（代码继续读下去就知道了）
+		 * 第一次是进入肯定 false，主要原因是 该bean 目前还不满足条件初始化，必须要进行进一步校验（代码继续读下去就知道了）
+		 *
+		 * 如果是true，则说明出现 循环引用了。A->B->A->然后进入这个方法
 		 */
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {

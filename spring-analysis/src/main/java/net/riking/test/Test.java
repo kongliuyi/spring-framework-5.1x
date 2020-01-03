@@ -17,5 +17,6 @@ public class Test {
 		aopBean.testAop();
 		UserDao userDao= (UserDao) applicationContext.getBean("userDao");
 		userDao.findUserList();
+		applicationContext.close();
 	}
 }

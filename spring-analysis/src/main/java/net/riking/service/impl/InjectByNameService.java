@@ -17,7 +17,7 @@ public class InjectByNameService {
 		dogService2.query();
 	}
 
-	public void setDogService1(IDogService dogService1) {
-		this.dogService2 = dogService1;
+	public void setDogService1(IDogService dogService2) {
+		this.dogService2 = dogService2;
 	}
 }

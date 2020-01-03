@@ -322,8 +322,8 @@ class ConfigurationClassParser {
 
 		// Process any @Import annotations  执行所有@Import注解
 		/**
-		 * 这里处理的import是需要判断我们的类当中时候有@Import注解
-		 * 如果有这把@Import当中的值拿出来，是一个类
+		 * 这里处理的import是需要判断我们的类当中有@Import注解
+		 * 如果@Import当中的值拿出来是一个类
 		 * 比如@Import(xxxxx.class)，那么这里便把xxxxx传进去进行解析
 		 * 在解析的过程中如果发觉是一个importSelector那么就回调selector的方法
 		 * 返回一个字符串（类名），通过这个字符串得到一个类
@@ -333,7 +333,7 @@ class ConfigurationClassParser {
 		 */
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
-		// Process any @ImportResource annotations
+		// Process any @ImportResource annotations 执行 加@ImportResource注解的方法
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
 		if (importResource != null) {

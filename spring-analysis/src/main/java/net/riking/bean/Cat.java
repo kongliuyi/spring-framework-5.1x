@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import java.beans.ConstructorProperties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,18 +26,19 @@ public class Cat {
 	}
 */
 
-/*	@Autowired(required = false)
+	@ConstructorProperties(value={"catStringOne","dog"})
+	@Autowired(required = false)
 	public Cat(String catStringOne,Dog dog) {
 		this.name = catStringOne;
 		System.out.println(name+dog.toString());
-	}*/
+	}
 
 	@Autowired(required = false)
 	public Cat(Dog dog) {
 		System.out.println(dog.toString());
 	}
 
-	@Autowired(required = false)
+/*	@Autowired(required = false)
 	protected Cat(String catStringOne, Dog dog, DogDao dogDao){};
 	@Autowired(required = false)
 	public Cat(Object o1){};
@@ -47,7 +49,7 @@ public class Cat {
 	@Autowired(required = false)
 	public Cat(Object o1, Object o2){};
 	@Autowired(required = false)
-	protected Cat(String catStringOne,Dog dog){};
+	protected Cat(String catStringOne,Dog dog){};*/
 
 
 

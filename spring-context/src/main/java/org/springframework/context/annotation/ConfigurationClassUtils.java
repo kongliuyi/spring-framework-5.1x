@@ -125,7 +125,7 @@ abstract class ConfigurationClassUtils {
 		}
 
 		//判断当前这个bd中存在的类是不是加了@Configruation注解,
-		// 如果存在则spring认为他是一个全注解的类
+		// 如果存在则spring认为他是一个全注解的类，key--》ConfigurationClassPostProcessorConfigurationClass
 		if (isFullConfigurationCandidate(metadata)) {
 			//如果存在Configuration 注解,则为BeanDefinition 设置configurationClass属性为full
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
@@ -137,7 +137,7 @@ abstract class ConfigurationClassUtils {
 		 * 	candidateIndicators.add(ComponentScan.class.getName());
 		 * 	candidateIndicators.add(Import.class.getName());
 		 * 	candidateIndicators.add(ImportResource.class.getName());
-		 * 	如果存在则spring认为是一个部分注解类
+		 * 	如果存在则spring认为是一个部分注解类，放进beanDef属性中 key--》ConfigurationClassPostProcessorConfigurationClass
 		 */
 		else if (isLiteConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
@@ -147,6 +147,7 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
+		// 如果这个类是全注解或者部分注解的话，且这个类存在Order的值，就放进ConfigurationClassPostProcessorOrder属性中
 		Integer order = getOrder(metadata);
 		if (order != null) {
 			beanDef.setAttribute(ORDER_ATTRIBUTE, order);

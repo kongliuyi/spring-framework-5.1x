@@ -205,16 +205,19 @@ class ConstructorResolver {
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
 				/**
-				 * 确定构造方法参数数量,假设有如下配置：
+				 * 确定构造方法参数数量,就是在某个时期，你传入了某个必须用在构造函数的值
+				 * 我目前发现有两种，第一种通过xml配置，如下：
 				 *     <bean id="cat" class="net.riking.bean.Cat">
 				 *         <constructor-arg index="0" value="name"/>
 				 *         <constructor-arg index="1" value="1"/>
 				 *         <constructor-arg index="2" value="str2"/>
 				 *     </bean>
 				 *
-				 *     在通过spring内部给了一个值得情况那么表示你的构造方法的最小参数个数一定
+				 *     在通过spring内部给了一个值得情况那么表示你的构造方法的最小参数个数一定minNrOfArgs = 3
+				 *  第二种：
+				 *  通过扩展点直接给值，例如：MapperScannerRegistrar类中
+				 *  bd.getConstructorArgumentValues().addGenericArgumentValue(UserDao.class);
 				 *
-				 * minNrOfArgs = 3
 				 */
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}

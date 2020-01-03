@@ -511,7 +511,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		//(metadata == null || metadata.targetClass != clazz);
 		if (InjectionMetadata.needsRefresh(metadata, clazz)) {
 			synchronized (this.injectionMetadataCache) {
-				//因为线程安全问题再次拿一次，目前是怕其他线程已经加入了
+				//因为线程安全问题再次拿一次，目的是怕其他线程已经加入了
 				metadata = this.injectionMetadataCache.get(cacheKey);
 				if (InjectionMetadata.needsRefresh(metadata, clazz)) {
 					if (metadata != null) {

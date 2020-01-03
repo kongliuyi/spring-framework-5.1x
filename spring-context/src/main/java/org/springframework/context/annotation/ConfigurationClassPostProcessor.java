@@ -249,6 +249,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		if (!this.registriesPostProcessed.contains(factoryId)) {
 			// BeanDefinitionRegistryPostProcessor hook apparently not supported...
 			// Simply call processConfigurationClasses lazily at this point then.
+			//基于注册 @Configuration注解   构建和验证一个配置模型--也就是处理配置类
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
 
@@ -280,10 +281,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 			/**
 			 *      判断是否是Configuration类，如果加了Configuration下面的这几个注解就不再判断了
-			 * 		还有  candidateIndicators.add(Component.class.getName());
+			 * 		candidateIndicators.add(Component.class.getName());
 			 * 		candidateIndicators.add(ComponentScan.class.getName());
 			 * 		candidateIndicators.add(Import.class.getName());
 			 * 		candidateIndicators.add(ImportResource.class.getName());
+			 *
+			 *   	ConfigurationClassUtils.checkConfigurationClassCandidate 作用
+			 *      判断的同时，将FullConfigurationClass和LiteConfigurationClass赋值，
+			 *     也就是下次循环进入的时候，跳过
 			 */
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
@@ -339,7 +344,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
-			//这一步
+			//这一步才是真正的解析-->
+			// 通过配置类。Component、ComponentScan、Import、ImportResource或者@Configuration
 			parser.parse(candidates);
 			parser.validate();
 
