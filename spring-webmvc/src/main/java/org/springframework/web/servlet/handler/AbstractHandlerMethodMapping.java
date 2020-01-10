@@ -207,7 +207,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @see #handlerMethodsInitialized
 	 */
 	protected void initHandlerMethods() {
+		// 获取容器中所有 bean 名字
 		for (String beanName : getCandidateBeanNames()) {
+			// 如果前缀不是 scopedTarget.
 			if (!beanName.startsWith(SCOPED_TARGET_NAME_PREFIX)) {
 				processCandidateBean(beanName);
 			}
@@ -241,6 +243,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	protected void processCandidateBean(String beanName) {
 		Class<?> beanType = null;
 		try {
+			// 获取该 bean 的 beanType
 			beanType = obtainApplicationContext().getType(beanName);
 		}
 		catch (Throwable ex) {
@@ -249,7 +252,12 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 				logger.trace("Could not resolve type for bean '" + beanName + "'", ex);
 			}
 		}
+		/**
+		 * RequestMappingHandlerMapping.isHandler：
+		 *              通过 beanType 过滤掉该类型没有被 @Controller、@RequestMapping注解
+		 */
 		if (beanType != null && isHandler(beanType)) {
+			// 这一步是关键，通过 beanName 检测该 bean 的所有 HandlerMethod
 			detectHandlerMethods(beanName);
 		}
 	}
@@ -265,9 +273,12 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 
 		if (handlerType != null) {
 			Class<?> userType = ClassUtils.getUserClass(handlerType);
+			// 通过反射，获取类中所有方法
+			// 筛选出 public 类型，并且带有 @RequestMapping 注解的方法
 			Map<Method, T> methods = MethodIntrospector.selectMethods(userType,
 					(MethodIntrospector.MetadataLookup<T>) method -> {
 						try {
+							// 通过 RequestMappingHandlerMapping.getMappingForMethod 方法组装成 RequestMappingInfo（映射关系）
 							return getMappingForMethod(method, userType);
 						}
 						catch (Throwable ex) {
@@ -280,6 +291,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			}
 			methods.forEach((method, mapping) -> {
 				Method invocableMethod = AopUtils.selectInvocableMethod(method, userType);
+				// 通过 mappingRegistry 进行注册上面获取到的映射关系
 				registerHandlerMethod(handler, invocableMethod, mapping);
 			});
 		}
@@ -583,7 +595,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		public void register(T mapping, Object handler, Method method) {
 			this.readWriteLock.writeLock().lock();
 			try {
+				// 将映射关系包装成 handlerMethod
 				HandlerMethod handlerMethod = createHandlerMethod(handler, method);
+				// 校验 MethodMapping，防止出现两个同样的 MethodMapping
 				assertUniqueMethodMapping(handlerMethod, mapping);
 				this.mappingLookup.put(mapping, handlerMethod);
 
@@ -598,11 +612,13 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 					addMappingName(name, handlerMethod);
 				}
 
+				// 跨域参数
 				CorsConfiguration corsConfig = initCorsConfiguration(handler, method, mapping);
 				if (corsConfig != null) {
 					this.corsLookup.put(handlerMethod, corsConfig);
 				}
 
+				// 将映射关系放入  Map<T, MappingRegistration<T>> registry
 				this.registry.put(mapping, new MappingRegistration<>(mapping, handlerMethod, directUrls, name));
 			}
 			finally {

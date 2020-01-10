@@ -17,9 +17,12 @@ dependencies {
     compile(project(":spring-beans"))
     compile(project(":spring-expression"))
     compile(project(":spring-jcl"))
+    compile("org.apache.tomcat.embed:tomcat-embed-core:8.5.33")
     optional(project(":spring-instrument"))
     optional(project(":spring-context"))
     optional("org.aspectj:aspectjweaver:${aspectjVersion}")
     optional(project(":spring-tx"))  // for Quartz support
+    optional(project(":spring-web"))
+    optional(project(":spring-webmvc"))
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
