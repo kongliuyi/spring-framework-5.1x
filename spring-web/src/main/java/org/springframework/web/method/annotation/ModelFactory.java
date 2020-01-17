@@ -106,12 +106,22 @@ public final class ModelFactory {
 	public void initModel(NativeWebRequest request, ModelAndViewContainer container, HandlerMethod handlerMethod)
 			throws Exception {
 
+		// 检索现有的 session 域中的  attributes，并将其放置于  mavContainer末尾
 		Map<String, ?> sessionAttributes = this.sessionAttributesHandler.retrieveAttributes(request);
 		container.mergeAttributes(sessionAttributes);
+		// 将所有的@ModelAttribute标注的方法都调用一遍。调用完了以后，将调用方法的结果放置到mavContainer中
 		invokeModelAttributeMethods(request, container);
 
+
+		/*
+		 * 找出handler方法中使用@ModelAttribute注解修饰的入参（主要是@ModelAttribute指定的value属性值，
+		 * 如果没有指定则是类名第一个字母小写得到，我们假定它为V），如果V同时被@SessionAttributes的value
+		 * 属性值指定，则将这样的V放入到nameList中。
+		 *
+		 */
 		for (String name : findSessionAttributeArguments(handlerMethod)) {
 			if (!container.containsAttribute(name)) {
+				// 检查 request中是否包含了name名字的 attribute ，不存在抛出异常 ，反之将 name,value 放入 mavContainer中存在
 				Object value = this.sessionAttributesHandler.retrieveAttribute(request, name);
 				if (value == null) {
 					throw new HttpSessionRequiredException("Expected session attribute '" + name + "'", name);
