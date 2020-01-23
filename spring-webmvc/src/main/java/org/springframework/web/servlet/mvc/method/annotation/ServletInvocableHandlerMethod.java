@@ -102,10 +102,12 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 	public void invokeAndHandle(ServletWebRequest webRequest, ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
-		//一、 调用处理方法，并得到返回结果
+		// 1.调用 Controller 中的具体方法
 		Object returnValue = invokeForRequest(webRequest, mavContainer, providedArgs);
+		// 2.设置返回状态码 或发送一个错误响应至客户端
 		setResponseStatus(webRequest);
 
+		// 3.当前请求返回值为空或者返回值中包含错误，则将请求完成标识设置为 true 并返回
 		if (returnValue == null) {
 			if (isRequestNotModified(webRequest) || getResponseStatus() != null || mavContainer.isRequestHandled()) {
 				disableContentCachingIfNecessary(webRequest);
@@ -118,9 +120,11 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 			return;
 		}
 
+		// 4.当前请求有返回值且无错误信息，则将请求完成标识设置为 false，并继续处理当前请求
 		mavContainer.setRequestHandled(false);
 		Assert.state(this.returnValueHandlers != null, "No return value handlers");
 		try {
+			// 选取合适的 HandlerMethodReturnValueHandler，并处理返回值
 			this.returnValueHandlers.handleReturnValue(
 					returnValue, getReturnValueType(returnValue), mavContainer, webRequest);
 		}
@@ -136,7 +140,9 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 	 * Set the response status according to the {@link ResponseStatus} annotation.
 	 */
 	private void setResponseStatus(ServletWebRequest webRequest) throws IOException {
+		// 获取HttpStatus
 		HttpStatus status = getResponseStatus();
+		// 未发现HttpStatus直接返回
 		if (status == null) {
 			return;
 		}
@@ -145,9 +151,23 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 		if (response != null) {
 			String reason = getResponseStatusReason();
 			if (StringUtils.hasText(reason)) {
+				/**
+				 * 注意 注意 注意：这里是 sendError ， 不是 setError
+				 * 使用指定的状态码并清空缓冲，发送一个错误响应至客户端。如果响应已经被提交，这个方法会抛出IllegalStateException。
+				 * 服务器默认会创建一个HTML格式的服务错误页面作为响应结果，其中包含参数msg指定的文本信息，
+				 * 这个HTML页面的内容类型为“text/html”，保留cookies和其他未修改的响应头信息。
+				 *
+				 * 如果一个对应于传入的错误码的错误页面已经在web.xml中声明，那么这个声明的错误页面将会优先于建议的msg参数服务于客户端。
+				 */
 				response.sendError(status.value(), reason);
 			}
 			else {
+				/**
+				 * 设置响应的状态码。
+				 * 这个方法被用于当响应结果正常时（例如，状态码为SC_OK或SC_MOVED_TEMPORARTLY）设置响应状态码。
+				 * 如果发生错误，而且来访者希望调用在web应用中定义的错误页面作为显示，那么应该使用sendError方法代替之。
+				 * 使用setStatus方法之后，容器会清空缓冲并设置Location响应头，保留cookies和其他响应头信息。
+				 */
 				response.setStatus(status.value());
 			}
 		}

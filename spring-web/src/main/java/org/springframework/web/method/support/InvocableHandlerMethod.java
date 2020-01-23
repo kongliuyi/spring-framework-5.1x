@@ -131,11 +131,18 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	public Object invokeForRequest(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
-		// 为调用处理方法准备参数
+		/**  为调用处理方法准备参数
+		 * 注意这里不一定都是解析@RequestMapping方法的参数,
+		 * 也有可能会解析@InitBinder方法的参数
+		 *
+		 * 所以下面的doInvoke方法也并不一定调用具体的@RequestMapping方法,
+		 * 也有可能调用@InitBinder方法进行参数的解析绑定
+		 */
 		Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Arguments: " + Arrays.toString(args));
 		}
+		// 调用方法
 		return doInvoke(args);
 	}
 

@@ -47,7 +47,7 @@ public class MyGlobalExceptionHandler {
     public ModelAndView customException(Exception e) {
         ModelAndView mv = new ModelAndView();
         mv.addObject("message", e.getMessage());
-        mv.setViewName("myerror");
+        mv.setViewName("error");
         return mv;
     }
 }

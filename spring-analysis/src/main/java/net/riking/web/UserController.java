@@ -12,6 +12,7 @@ import java.util.Map;
 public class UserController {
 
 	@GetMapping("login")
+	@ResponseBody
 	public  String login(){
 		return "succeed";
 	}

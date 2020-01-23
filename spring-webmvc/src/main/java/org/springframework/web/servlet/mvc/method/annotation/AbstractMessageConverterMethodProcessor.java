@@ -320,6 +320,7 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 	}
 
 	/**
+	 * 返回值或声明的返回类型是否扩展{@link Resource}。
 	 * Return whether the returned value or the declared return type extends {@link Resource}.
 	 */
 	protected boolean isResourceType(@Nullable Object value, MethodParameter returnType) {

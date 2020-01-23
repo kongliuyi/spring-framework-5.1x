@@ -733,6 +733,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		List<HandlerMethodReturnValueHandler> handlers = new ArrayList<>();
 
 		// Single-purpose return value types
+		// 处理返回值类型是 ModelAndView 或其子类的处理器
 		handlers.add(new ModelAndViewMethodReturnValueHandler());
 		handlers.add(new ModelMethodProcessor());
 		handlers.add(new ViewMethodReturnValueHandler());
@@ -747,15 +748,18 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		handlers.add(new AsyncTaskMethodReturnValueHandler(this.beanFactory));
 
 		// Annotation-based return value types
+		// 处理基于 @ModelAttribute 注解的处理器
 		handlers.add(new ModelAttributeMethodProcessor(false));
+		// 处理基于 @ResponseBody 和 @RequestBody 注解的处理器
 		handlers.add(new RequestResponseBodyMethodProcessor(getMessageConverters(),
 				this.contentNegotiationManager, this.requestResponseBodyAdvice));
 
 		// Multi-purpose return value types
+		// 处理 handler 的返回值类型是 void 和 String 类型的
 		handlers.add(new ViewNameMethodReturnValueHandler());
 		handlers.add(new MapMethodProcessor());
 
-		// Custom return value types
+		// Custom return value types  自定义返回值处理器
 		if (getCustomReturnValueHandlers() != null) {
 			handlers.addAll(getCustomReturnValueHandlers());
 		}
@@ -887,7 +891,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			 * 检索request域中的attribute，并将其放置在mavContainer末尾
 			 *
 			 * RequestContextUtils.getInputFlashMap(request)会调用HttpServletRequest.getAttribute(DispatcherServlet.class.getName() + ".INPUT_FLASH_MAP")方法。
-			 * 可以获取到request中的attribute属性。这个attribute就是我们属性的attribute，它可以通过两
+			 * 可以获取到request中的 attribute 属性。这个attribute就是我们属性的attribute，它可以通过两
 			 * 种方式来设置：
 			 * ①servlet容器为request设置的；
 			 * ②通过ServletRequest.setAttribute方法来设置。
@@ -896,7 +900,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			mavContainer.addAllAttributes(RequestContextUtils.getInputFlashMap(request));
 			/**
 			 * 会在这个方法里将所有标注了@ModelAttribute的方法调用一遍，并且将该方法相关的ModelAndView放入到mavContainer中：
-			 * 1、最常见的就是@ModelAttribute标注的方法入参中有Map，Model
+			 * 1、最常见的就是 @ModelAttribute 标注的方法入参中有 Map，Model
 			 * 2、如果方法有返回值，那么也会结果处理后放入到mavContainer中（是否只有ModelAndView类型的返回值才能放，有待考察？？）
 			 */
 			modelFactory.initModel(webRequest, mavContainer, invocableMethod);
@@ -923,13 +927,13 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				invocableMethod = invocableMethod.wrapConcurrentResult(result);
 			}
 
-			// 在这里调用handler方法
+			// 在这里调用 handler 方法并处理返回值(通过相应的 HandlerMethodReturnValueHandler 处理)
 			invocableMethod.invokeAndHandle(webRequest, mavContainer);
 			if (asyncManager.isConcurrentHandlingStarted()) {
 				return null;
 			}
 
-			// 要么返回ModelAndView，要么返回null
+			// 要么返回 ModelAndView，要么返回null
 			return getModelAndView(mavContainer, modelFactory, webRequest);
 		}
 		finally {
@@ -948,27 +952,36 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	}
 
 	private ModelFactory getModelFactory(HandlerMethod handlerMethod, WebDataBinderFactory binderFactory) {
+		// 获取该 handlerType 的 @SessionAttributes 注解信息并封装成 SessionAttributesHandler
 		SessionAttributesHandler sessionAttrHandler = getSessionAttributesHandler(handlerMethod);
 		Class<?> handlerType = handlerMethod.getBeanType();
 		Set<Method> methods = this.modelAttributeCache.get(handlerType);
 		if (methods == null) {
+			// 获取 handlerType 类型  所有被 @ModelAttribute 修饰且非 @RequestMapping修饰 的方法
 			methods = MethodIntrospector.selectMethods(handlerType, MODEL_ATTRIBUTE_METHODS);
 			this.modelAttributeCache.put(handlerType, methods);
 		}
 		List<InvocableHandlerMethod> attrMethods = new ArrayList<>();
-		// Global methods first
+		// Global methods first 通过全局查找，判断该 handlerType 是否在全局（@ControllerAdviceBean）所属适用范围内
 		this.modelAttributeAdviceCache.forEach((clazz, methodSet) -> {
 			if (clazz.isApplicableToBeanType(handlerType)) {
 				Object bean = clazz.resolveBean();
 				for (Method method : methodSet) {
+					// 将 binderFactory, bean, method 封装成 InvocableHandlerMethod
 					attrMethods.add(createModelAttributeMethod(binderFactory, bean, method));
 				}
 			}
 		});
+		// 这里遍历自己本身（handlerType）被 @ModelAttribute 注解修饰的方法并进行封装成 InvocableHandlerMethod
 		for (Method method : methods) {
 			Object bean = handlerMethod.getBean();
 			attrMethods.add(createModelAttributeMethod(binderFactory, bean, method));
 		}
+		/**  信息封装
+		 * attrMethods: （全局+ handlerType 类型）被 @ModelAttribute 修饰的方法
+		 * binderFactory：
+		 * sessionAttrHandler: handlerType 类型被 @SessionAttributes 注解修饰的类
+		 */
 		return new ModelFactory(attrMethods, binderFactory, sessionAttrHandler);
 	}
 
@@ -986,12 +999,15 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		Class<?> handlerType = handlerMethod.getBeanType();
 		Set<Method> methods = this.initBinderCache.get(handlerType);
 		if (methods == null) {
+			// 获取 handlerType 类型  所有被 @InitBinder 修饰的方法
 			methods = MethodIntrospector.selectMethods(handlerType, INIT_BINDER_METHODS);
 			this.initBinderCache.put(handlerType, methods);
 		}
 		List<InvocableHandlerMethod> initBinderMethods = new ArrayList<>();
 		// Global methods first
 		this.initBinderAdviceCache.forEach((clazz, methodSet) -> {
+		    // 判断当前类是否被 ControllerAdviceBean 修饰，
+			// 判断依据位 ControllerAdviceBean上 设置的注解 @ControllerAdvice 内的参数
 			if (clazz.isApplicableToBeanType(handlerType)) {
 				Object bean = clazz.resolveBean();
 				for (Method method : methodSet) {
@@ -1034,15 +1050,19 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	private ModelAndView getModelAndView(ModelAndViewContainer mavContainer,
 			ModelFactory modelFactory, NativeWebRequest webRequest) throws Exception {
 
+		// 1.更新模型
 		modelFactory.updateModel(webRequest, mavContainer);
 		if (mavContainer.isRequestHandled()) {
 			return null;
 		}
+		// 2.获取 ModelMap并创建 ModelAndView
 		ModelMap model = mavContainer.getModel();
 		ModelAndView mav = new ModelAndView(mavContainer.getViewName(), model, mavContainer.getStatus());
+		// 3.处理非 String 类型视图和转发类型视图
 		if (!mavContainer.isViewReference()) {
 			mav.setView((View) mavContainer.getView());
 		}
+		// 4.处理转发类型视图
 		if (model instanceof RedirectAttributes) {
 			Map<String, ?> flashAttributes = ((RedirectAttributes) model).getFlashAttributes();
 			HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
