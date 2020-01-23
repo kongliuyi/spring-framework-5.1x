@@ -46,6 +46,7 @@ public class StandardClassMetadata implements ClassMetadata {
 	}
 
 	/**
+	 * 返回底层类。
 	 * Return the underlying Class.
 	 */
 	public final Class<?> getIntrospectedClass() {

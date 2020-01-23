@@ -286,7 +286,7 @@ public class AnnotatedBeanDefinitionReader {
 		}
 
 		/**
-		 * 这个BeanDefinitionHolder也是一个数据结构,
+		 * 可以把BeanDefinitionHolder理解成一个数据结构,
 		 * 这种结构可以认为就是持有 BeanDefinition，同时持有的包括BeanDefinition的名称和别名
 		 */
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);

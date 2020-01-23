@@ -2,10 +2,12 @@ package net.riking.bean;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
+import org.springframework.stereotype.Component;
 
 /**
  * Bean 类型的后处理器
  */
+//@Component  --->这里通过 MyImportSelector  注册进容器中
 public class CarBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
 
 	@Override

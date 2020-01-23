@@ -46,6 +46,10 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 
 /**
+ * 请求或响应的主体
+ * 通过读写被{@code @ResponseBody}注解的方法
+ * 解析被{@code @RequestBody}注解方法的参数 并处理返回值
+ *
  * Resolves method arguments annotated with {@code @RequestBody} and handles return
  * values from methods annotated with {@code @ResponseBody} by reading and writing
  * to the body of the request or response with an {@link HttpMessageConverter}.
@@ -177,7 +181,8 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 		ServletServerHttpRequest inputMessage = createInputMessage(webRequest);
 		ServletServerHttpResponse outputMessage = createOutputMessage(webRequest);
 
-		// Try even with null return value. ResponseBodyAdvice could get involved.
+		// Try even with null return value. ResponseBodyAdvice could get involved.使用返回值 null。ResponseBodyAdvice 也能够正常兼容。
+		// 将给定的返回类型写入给定的输出消息。
 		writeWithMessageConverters(returnValue, returnType, inputMessage, outputMessage);
 	}
 

@@ -2,12 +2,13 @@ package net.riking.aop;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.springframework.stereotype.Component;
 
-
+@Component
 @Aspect
 public class AspectJTest {
 
-	@Pointcut("execution(* net.riking.*.testAop(..))")
+	@Pointcut("execution(* net.riking.aop.*.testAop(..))")
 	public void test() {
 
 	}

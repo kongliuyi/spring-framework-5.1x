@@ -41,6 +41,12 @@ abstract class BeanAnnotationHelper {
 		return AnnotatedElementUtils.hasAnnotation(method, Bean.class);
 	}
 
+	/**
+	 * 如果@Bean 注解 name 属性为空，则将方法名作为 beanName 否则取 name 属性值
+	 * 放入 beanNameCache 集合中
+	 * @param beanMethod
+	 * @return
+	 */
 	public static String determineBeanNameFor(Method beanMethod) {
 		String beanName = beanNameCache.get(beanMethod);
 		if (beanName == null) {

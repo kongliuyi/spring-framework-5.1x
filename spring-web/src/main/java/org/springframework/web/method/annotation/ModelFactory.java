@@ -63,10 +63,12 @@ public final class ModelFactory {
 
 	private static final Log logger = LogFactory.getLog(ModelFactory.class);
 
+	// （全局类（@ControllerAdvice）+ 以及当前请求Controller 类）中被 @ModelAttribute 修饰的方法
 	private final List<ModelMethod> modelMethods = new ArrayList<>();
 
 	private final WebDataBinderFactory dataBinderFactory;
 
+	// 被 @SessionAttributes 注解修饰的类（这个类指当前请求 Controller 类）
 	private final SessionAttributesHandler sessionAttributesHandler;
 
 
@@ -106,12 +108,22 @@ public final class ModelFactory {
 	public void initModel(NativeWebRequest request, ModelAndViewContainer container, HandlerMethod handlerMethod)
 			throws Exception {
 
+		// 检索现有的 session 域中的 attributes 值，其属性名是通过被 @SessionAttributes(name) 修饰的类中
 		Map<String, ?> sessionAttributes = this.sessionAttributesHandler.retrieveAttributes(request);
+		// ModelMap ，将 sessionAttributes 合并 ModelMap 中
 		container.mergeAttributes(sessionAttributes);
+		// 将所有的 @ModelAttribute 标注的方法都调用一遍。调用完了以后，将调用方法的结果放置到 mavContainer中
 		invokeModelAttributeMethods(request, container);
 
+
+		/*
+		 * 找出 handler方法参数中使用 @ModelAttribute 注解（主要是@ModelAttribute 指定的 value 属性值）
+		 * 如果 @ModelAttribute 没有指定属性值，则是类名第一个字母小写得到，我们假定它为V），
+		 * 如果 V 同时也被 @SessionAttributes 的 value 属性值指定，则将这样的V放入到nameList中。
+		 */
 		for (String name : findSessionAttributeArguments(handlerMethod)) {
 			if (!container.containsAttribute(name)) {
+				// 检查 request中是否包含了name名字的 attribute ，不存在抛出异常 ，反之将 name,value 放入 mavContainer中存在
 				Object value = this.sessionAttributesHandler.retrieveAttribute(request, name);
 				if (value == null) {
 					throw new HttpSessionRequiredException("Expected session attribute '" + name + "'", name);
@@ -141,6 +153,12 @@ public final class ModelFactory {
 
 			Object returnValue = modelMethod.invokeForRequest(request, container);
 			if (!modelMethod.isVoid()){
+				/**
+				 * returnValueName 基于（优先级高往低）:
+				 * 1.方法{@code ModelAttribute}注解值
+				 * 2.方法声明的返回类型（如果它比{@code Object}更具体）
+				 * 3.实际返回值类型
+				 */
 				String returnValueName = getNameForReturnValue(returnValue, modelMethod.getReturnType());
 				if (!ann.binding()) {
 					container.setBindingDisabled(returnValueName);

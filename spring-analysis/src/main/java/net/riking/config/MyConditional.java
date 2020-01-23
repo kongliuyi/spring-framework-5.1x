@@ -31,6 +31,7 @@ public class MyConditional implements Condition {
      if (property.contains("Windows")){
             return true;
         }
+		System.out.println("false："+property);
         return false;
     }
 }

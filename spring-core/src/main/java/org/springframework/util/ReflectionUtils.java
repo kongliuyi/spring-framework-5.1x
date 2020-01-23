@@ -689,8 +689,10 @@ public abstract class ReflectionUtils {
 	 * @see #doWithFields
 	 */
 	public static void doWithLocalFields(Class<?> clazz, FieldCallback fc) {
+		//通过 反射获取该clazz 所有字段元素
 		for (Field field : getDeclaredFields(clazz)) {
 			try {
+				//进行回调
 				fc.doWith(field);
 			}
 			catch (IllegalAccessException ex) {

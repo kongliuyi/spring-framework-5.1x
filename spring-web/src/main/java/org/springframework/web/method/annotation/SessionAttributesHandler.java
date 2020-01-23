@@ -129,6 +129,7 @@ public class SessionAttributesHandler {
 	public Map<String, Object> retrieveAttributes(WebRequest request) {
 		Map<String, Object> attributes = new HashMap<>();
 		for (String name : this.knownAttributeNames) {
+			// 从后端会话中获取指定属性的值。
 			Object value = this.sessionAttributeStore.retrieveAttribute(request, name);
 			if (value != null) {
 				attributes.put(name, value);
