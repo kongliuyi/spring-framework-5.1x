@@ -4,6 +4,7 @@ import net.riking.annotation.Mapper;
 import net.riking.bean.Cat;
 import net.riking.bean.Dog;
 import org.springframework.context.annotation.*;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 @Configuration
 @ComponentScan("net.riking")
@@ -29,5 +30,15 @@ public class AppConfig {
 
 		return "catStringTwo";
 	}
+
+
+	@Bean
+	public InternalResourceViewResolver viewResolver(){
+		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+		viewResolver.setPrefix("/views/");
+		viewResolver.setSuffix(".jsp");
+		return viewResolver;
+	}
+
 
 }

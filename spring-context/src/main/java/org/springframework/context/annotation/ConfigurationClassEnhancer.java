@@ -97,7 +97,7 @@ class ConfigurationClassEnhancer {
 	 * @return the enhanced subclass
 	 */
 	public Class<?> enhance(Class<?> configClass, @Nullable ClassLoader classLoader) {
-		//通过当前configClass类是否含有代理的接口EnhancedConfiguration 从而判断是否被代理过
+		// 根据当前 configClass 类来判断 configClass 是否实现了代理类接口 EnhancedConfiguration 从而判断是否被代理过
 		if (EnhancedConfiguration.class.isAssignableFrom(configClass)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug(String.format("Ignoring request to enhance %s as it has " +
@@ -124,21 +124,22 @@ class ConfigurationClassEnhancer {
 	 */
 	private Enhancer newEnhancer(Class<?> configSuperClass, @Nullable ClassLoader classLoader) {
 		Enhancer enhancer = new Enhancer();
-		//增强父类，cglib是基于继承来的
+		// 增强父类，cglib是基于继承来的
 		enhancer.setSuperclass(configSuperClass);
-		//增强接口，为什么要增强接口?
-		//便于判断，表示一个类被增强了
+		// 增强接口，为什么要增强接口?
+		// 便于判断，表示一个类被增强了
 		enhancer.setInterfaces(new Class<?>[] {EnhancedConfiguration.class});
-		//不继承Factory接口
+		// 不继承Factory接口
 		enhancer.setUseFactory(false);
 
+		// 生成类的名字的策略
 		enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
 		// BeanFactoryAwareGeneratorStrategy是一个生成策略
-		// 主要为生成的CGLIB类中添加成员变量 $$beanFactory
-		// 同时基于接口EnhancedConfiguration的父接口BeanFactoryAware中的setBeanFactory方法，
+		// 主要为生成的 CGLIB类中添加成员变量 $$beanFactory
+		// 同时基于接口 EnhancedConfiguration的父接口 BeanFactoryAware 中的setBeanFactory方法，
 		// 设置此变量的值为当前Context中的beanFactory,这样一来我们这个cglib代理的对象就有了beanFactory
 		// 有了factory就能获得对象，而不用去通过方法获得对象了，因为通过方法获得对象不能控制器过程
-		// 该BeanFactory的作用是在this调用时拦截该调用，并直接在beanFactory中获得目标bean
+		// 该 BeanFactory 的作用是在this调用时拦截该调用，并直接在beanFactory中获得目标bean
 		enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader));
 		//过滤方法，不能每次都去new--->this.CALLBACKS 属性
 		enhancer.setCallbackFilter(CALLBACK_FILTER);
@@ -416,7 +417,7 @@ class ConfigurationClassEnhancer {
 			// the bean method, direct or indirect. The bean may have already been marked
 			// as 'in creation' in certain autowiring scenarios; if so, temporarily set
 			// the in-creation status to false in order to avoid an exception.
-			//判断他是否正在创建
+			// 判断他是否正在创建
 			boolean alreadyInCreation = beanFactory.isCurrentlyInCreation(beanName);
 			try {
 				if (alreadyInCreation) {

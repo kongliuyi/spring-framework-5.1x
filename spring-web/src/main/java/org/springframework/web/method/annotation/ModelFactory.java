@@ -110,7 +110,7 @@ public final class ModelFactory {
 
 		// 检索现有的 session 域中的 attributes 值，其属性名是通过被 @SessionAttributes(name) 修饰的类中
 		Map<String, ?> sessionAttributes = this.sessionAttributesHandler.retrieveAttributes(request);
-		// ModelMap ，将 sessionAttributes 合并 ModelMap 中
+		// ModelMap ，将 sessionAttributes 合并在 ModelMap 中
 		container.mergeAttributes(sessionAttributes);
 		// 将所有的 @ModelAttribute 标注的方法都调用一遍。调用完了以后，将调用方法的结果放置到 mavContainer中
 		invokeModelAttributeMethods(request, container);
@@ -123,7 +123,7 @@ public final class ModelFactory {
 		 */
 		for (String name : findSessionAttributeArguments(handlerMethod)) {
 			if (!container.containsAttribute(name)) {
-				// 检查 request中是否包含了name名字的 attribute ，不存在抛出异常 ，反之将 name,value 放入 mavContainer中存在
+				// 检查 request 中是否包含了 name 名字的 attribute ，不存在抛出异常 ，反之将 name,value 放入 mavContainer中存在
 				Object value = this.sessionAttributesHandler.retrieveAttribute(request, name);
 				if (value == null) {
 					throw new HttpSessionRequiredException("Expected session attribute '" + name + "'", name);
@@ -151,11 +151,12 @@ public final class ModelFactory {
 				continue;
 			}
 
+			// 在给定请求的上下文中解析其参数值后调用该（modelMethod）方法。
 			Object returnValue = modelMethod.invokeForRequest(request, container);
 			if (!modelMethod.isVoid()){
 				/**
 				 * returnValueName 基于（优先级高往低）:
-				 * 1.方法{@code ModelAttribute}注解值
+				 * 1.方法中{@code ModelAttribute}注解信息值
 				 * 2.方法声明的返回类型（如果它比{@code Object}更具体）
 				 * 3.实际返回值类型
 				 */

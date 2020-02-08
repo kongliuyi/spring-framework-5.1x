@@ -69,6 +69,7 @@ public class DefaultSessionAttributeStore implements SessionAttributeStore {
 		Assert.notNull(request, "WebRequest must not be null");
 		Assert.notNull(attributeName, "Attribute name must not be null");
 		String storeAttributeName = getAttributeNameInSession(request, attributeName);
+		// request 为 ServletWebRequest  extends ServletRequestAttributes ---》ServletRequestAttributes.removeAttribute
 		request.removeAttribute(storeAttributeName, WebRequest.SCOPE_SESSION);
 	}
 

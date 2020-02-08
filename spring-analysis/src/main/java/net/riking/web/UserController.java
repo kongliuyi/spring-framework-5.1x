@@ -11,13 +11,14 @@ import java.util.Map;
 @Controller
 public class UserController {
 
-	@GetMapping("login")
+	@GetMapping("/login")
 	@ResponseBody
 	public  String login(){
 		return "succeed";
 	}
 
-	@RequestMapping(value = "plain")
+
+	@RequestMapping(value = "plain/{name}")
 	@ResponseBody
 	public String plain(@PathVariable String name) {
 		return name;
@@ -33,10 +34,10 @@ public class UserController {
 	}
 
 
-	@GetMapping("/index1")
+	@GetMapping("/index")
 	public Object index(ModelMap modelMap) {
 		System.out.println(modelMap.get("md"));
-		return modelMap.get("md");
+		return "index";
 	}
 
 	// 也可以通过@ModelAttribute获取

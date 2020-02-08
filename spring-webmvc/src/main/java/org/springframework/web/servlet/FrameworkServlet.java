@@ -603,7 +603,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			// support or the context injected at construction time had already been
 			// refreshed -> trigger initial onRefresh manually here.
 			synchronized (this.onRefreshMonitor) {
-				// 刷新，初始化很多策略方法,子类DispatcherServlet去具体实现
+				// 刷新，初始化很多策略方法,子类 DispatcherServlet 去具体实现
 				onRefresh(wac);
 			}
 		}

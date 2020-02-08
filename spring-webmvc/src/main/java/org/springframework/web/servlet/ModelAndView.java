@@ -46,7 +46,7 @@ import org.springframework.util.CollectionUtils;
  */
 public class ModelAndView {
 
-	/** View instance or view name String. */
+	/** View instance or view name String. 视图实例或视图名称字符串 */
 	@Nullable
 	private Object view;
 
@@ -54,7 +54,7 @@ public class ModelAndView {
 	@Nullable
 	private ModelMap model;
 
-	/** Optional HTTP status for the response. */
+	/** Optional HTTP status for the response. 响应的可选HTTP状态。*/
 	@Nullable
 	private HttpStatus status;
 

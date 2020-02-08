@@ -515,54 +515,54 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
-			//准备工作包括设置启动时间，是否激活标识位，
+			// 准备工作包括设置启动时间，是否激活标识位，
 			// 初始化属性源(property source)配置
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			//告诉子类刷新内部bean工厂。
+			// 告诉子类刷新内部bean工厂。
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
-			//Prepare the bean factory for use in this context.
+			// Prepare the bean factory for use in this context.
 			// 准备bean工厂以供在此上下文中使用。
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
-				// 允许在上下文子类中对bean工厂进行后置处理。这个方法在当前版本的spring是没用任何代码的
+				// 允许在上下文子类中对 bean 工厂进行后置处理。这个方法在当前版本的 spring 是没用任何代码的
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
 				/**
 				 * 这个方法很重要,就这一个方法，我几乎看看半个月时间
 				 * 调用上下文中注册为bean的工厂处理器。
-				 * 实例化并调用所有已注册的BeanFactoryPostProcessor bean，
-				 * 注意：要区分BeanFactoryPostProcessor与ProcessBeanFactory,两者不同
+				 * 实例化并调用所有已注册的 BeanFactoryPostProcessor bean，
+				 * 注意：要区分 BeanFactoryPostProcessor与ProcessBeanFactory,两者不同
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
-				//注册所有beanPostProcessor（放入AbstractBeanFactory.beanPostProcessors集合）
+				// 注册所有 beanPostProcessor（放入 AbstractBeanFactory.beanPostProcessors 集合）
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
-				//为此上下文初始化消息源,一般是国际化。
+				// 为此上下文初始化消息源,一般是国际化。
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
-				//初始化应用事件广播器
+				// 初始化应用事件广播器
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
-				//初始化特定上下文子类中的其他特殊bean。
+				// 初始化特定上下文子类中的其他特殊 bean。
 				onRefresh();
 
 				// Check for listener beans and register them.
-				//检查侦听器bean并注册它们。
+				// 检查侦听器 bean 并注册它们。
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
-				//实例化所有剩余的(非懒加载初始化)单例。
+				// 实例化所有剩余的(非懒加载初始化)单例。
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.

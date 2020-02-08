@@ -94,15 +94,21 @@ public class AcceptHeaderLocaleResolver implements LocaleResolver {
 
 	@Override
 	public Locale resolveLocale(HttpServletRequest request) {
+		// 获取默认设置，可在配置 AcceptHeaderLocaleResolver Bean 中设置 defaultLocale 属性，具体使用链接：https://segmentfault.com/a/1190000014797899
 		Locale defaultLocale = getDefaultLocale();
+		// 设置了默认值并且请求中没有 Accept-Language 头信息时，使用默认设置
 		if (defaultLocale != null && request.getHeader("Accept-Language") == null) {
 			return defaultLocale;
 		}
+		// 从当前请求中获取Locale
 		Locale requestLocale = request.getLocale();
+		// 从配置中获取支持的 Locale 集合，可在 AcceptHeaderLocaleResolver Bean 中设置 supportedLocales 属性
 		List<Locale> supportedLocales = getSupportedLocales();
+		// 未设置 supportedLocales 或者 supportedLocales 中包括请求 Locale，则使用请求 Locale
 		if (supportedLocales.isEmpty() || supportedLocales.contains(requestLocale)) {
 			return requestLocale;
 		}
+		// 找到设置的 Locale 集合中是否有请求的 Locale
 		Locale supportedLocale = findSupportedLocale(request, supportedLocales);
 		if (supportedLocale != null) {
 			return supportedLocale;

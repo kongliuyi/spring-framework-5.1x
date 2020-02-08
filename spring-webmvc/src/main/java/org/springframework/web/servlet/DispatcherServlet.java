@@ -502,7 +502,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	protected void initStrategies(ApplicationContext context) {
 		// 初始化 multipartResolver 文件上传相关
 		initMultipartResolver(context);
-		// 初始化 LocalResolver 与国际化相关
+		// 初始化 LocalResolver 与国际化相关 (解析客户端使用的地区（Locale）)
 		initLocaleResolver(context);
 		// 初始化 ThemeResolver 与主题更换相关
 		initThemeResolver(context);
@@ -1028,14 +1028,15 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
-				// 检查是否 MultipartContent 类型
+				// 检查是否 MultipartContent 类型，即是否是上传请求
 				processedRequest = checkMultipart(request);
 				multipartRequestParsed = (processedRequest != request);
 
 				// Determine handler for the current request.
-				// 根据当前请求信息寻找对应的（处理器） Handler
+				// 根据当前请求信息寻找对应的（映射处理器） HandlerExecutionChain（封装 handler 以及对应拦截器）
 				mappedHandler = getHandler(processedRequest);
 				if (mappedHandler == null) {
+					// 没有找到 handler，通过 response 向用户返回错误信息
 					noHandlerFound(processedRequest, response);
 					return;
 				}
@@ -1055,18 +1056,22 @@ public class DispatcherServlet extends FrameworkServlet {
 					}
 				}
 
+				// 拦截器的 preHandler 方法的调用
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}
 
 				// Actually invoke the handler.
+				// 真正激活 handler 进行处理，并返回视图 (ModelAndView)
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {
 					return;
 				}
 
+				// 视图名称转换（有可能需要加上前后缀）
 				applyDefaultViewName(processedRequest, mv);
+				// 应用所有拦截器的 postHandle 方法
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
 			}
 			catch (Exception ex) {
@@ -1077,12 +1082,21 @@ public class DispatcherServlet extends FrameworkServlet {
 				// making them available for @ExceptionHandler methods and other scenarios.
 				dispatchException = new NestedServletException("Handler dispatch failed", err);
 			}
+			/**
+			 * 处理分发的结果：
+			 * 1.“请求”的过程中有异常
+			 * 2. 如果有 mv，进行视图渲染和跳转
+			 *
+			 * 【ViewResolver（视图解析器）入口点】
+			 */
 			processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
 		}
 		catch (Exception ex) {
+			// 触发拦截器的 AfterCompletion
 			triggerAfterCompletion(processedRequest, response, mappedHandler, ex);
 		}
 		catch (Throwable err) {
+			// 触发拦截器的 AfterCompletion
 			triggerAfterCompletion(processedRequest, response, mappedHandler,
 					new NestedServletException("Handler processing failed", err));
 		}
@@ -1124,6 +1138,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		boolean errorView = false;
 
+		// 如果处理“请求”的过程中有异常，则处理异常
 		if (exception != null) {
 			if (exception instanceof ModelAndViewDefiningException) {
 				logger.debug("ModelAndViewDefiningException encountered", exception);
@@ -1131,15 +1146,18 @@ public class DispatcherServlet extends FrameworkServlet {
 			}
 			else {
 				Object handler = (mappedHandler != null ? mappedHandler.getHandler() : null);
+				// 通过已注册的 HandlerExceptionResolvers 确定一个错误模型和视图。
 				mv = processHandlerException(request, response, handler, exception);
 				errorView = (mv != null);
 			}
 		}
 
-		// Did the handler return a view to render?
+		// Did the handler return a view to render? 处理程序是否返回要呈现的视图? 即渲染视图
 		if (mv != null && !mv.wasCleared()) {
+			// 渲染页面
 			render(mv, request, response);
 			if (errorView) {
+				// 移除 Request 中 Attributes 某些错误信息，
 				WebUtils.clearErrorRequestAttributes(request);
 			}
 		}
@@ -1154,6 +1172,7 @@ public class DispatcherServlet extends FrameworkServlet {
 			return;
 		}
 
+		// 触发拦截器的 AfterCompletion
 		if (mappedHandler != null) {
 			mappedHandler.triggerAfterCompletion(request, response, null);
 		}
@@ -1360,7 +1379,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * @throws Exception if there's a problem rendering the view
 	 */
 	protected void render(ModelAndView mv, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		// Determine locale for request and apply it to the response.
+		// Determine locale for request and apply it to the response. 根据当前 request 在响应中设置国际化区域（Locale），默认 AcceptHeaderLocaleResolver
 		Locale locale =
 				(this.localeResolver != null ? this.localeResolver.resolveLocale(request) : request.getLocale());
 		response.setLocale(locale);

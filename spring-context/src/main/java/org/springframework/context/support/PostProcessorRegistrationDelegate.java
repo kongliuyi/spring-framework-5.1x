@@ -182,10 +182,10 @@ final class PostProcessorRegistrationDelegate {
 			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
 			/**
 			 * 	执行BeanFactoryPostProcessor的回调，前面不是吗？
-			 * 	前面执行的是 BeanFactoryPostProcessor的子类BeanDefinitionRegistryPostProcessor的回调
+			 * 	前面执行的是 BeanFactoryPostProcessor 的子类 BeanDefinitionRegistryPostProcessor 的回调
 			 * 	这是执行的是所有BeanDefinitionRegistryPostProcessor 父接口BeanFactoryPostProcessor中的 postProcessBeanFactory
 			 *
-			 * 	这里也很重要，也算工厂的核心部分
+			 * 	这里也很重要，也算工厂的核心部分 例如： 将含有 @Configuration 注解的类进行 cglib 代理
 			 */
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
 			//执行 自定义BeanFactoryPostProcessor.postProcessBeanFactory

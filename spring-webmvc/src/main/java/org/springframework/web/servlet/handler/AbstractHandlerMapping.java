@@ -284,7 +284,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 
 
 	/**
-	 * Initializes the interceptors.
+	 * Initializes the interceptors. 始化拦截器。
 	 * @see #extendInterceptors(java.util.List)
 	 * @see #initInterceptors()
 	 */
@@ -399,7 +399,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
-		// 根据 Request 获取对应的 handler
+		// 根据 Request 获取对应的 handler（实际为 HandlerMethod，封装着对应 Method 和 Controller 对象）
 		Object handler = getHandlerInternal(request);
 		if (handler == null) {
 			// 如果没有对应的 handler，则使用默认的 handler

@@ -132,7 +132,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 			Object... providedArgs) throws Exception {
 
 		/**  为调用处理方法准备参数
-		 * 注意这里不一定都是解析@RequestMapping方法的参数,
+		 * 注意这里不一定都是解析 @RequestMapping 方法的参数,
 		 * 也有可能会解析@InitBinder方法的参数
 		 *
 		 * 所以下面的doInvoke方法也并不一定调用具体的@RequestMapping方法,

@@ -563,7 +563,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		// 首先执行这个方法，可能添加 responseBody 切面 bean
 		initControllerAdviceCache();
 
-		// 参数处理器
+		// 参数解析器
 		if (this.argumentResolvers == null) {
 			// 实例化一些默认的解析器
 			List<HandlerMethodArgumentResolver> resolvers = getDefaultArgumentResolvers();
@@ -750,7 +750,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		// Annotation-based return value types
 		// 处理基于 @ModelAttribute 注解的处理器
 		handlers.add(new ModelAttributeMethodProcessor(false));
-		// 处理基于 @ResponseBody 和 @RequestBody 注解的处理器
+		// 处理基于 @ResponseBody 和 @RequestBody 注解的处理器（MessageConverters 消息转换器来源于该适配器初始化）
 		handlers.add(new RequestResponseBodyMethodProcessor(getMessageConverters(),
 				this.contentNegotiationManager, this.requestResponseBodyAdvice));
 
@@ -794,6 +794,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
 
 		ModelAndView mav;
+		// 检查给定的请求是否支持方法和所需的会话(如果有)。
 		checkRequest(request);
 
 		// Execute invokeHandlerMethod in synchronized block if required.
@@ -871,7 +872,15 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 
 		ServletWebRequest webRequest = new ServletWebRequest(request, response);
 		try {
+			// 创建并获取数据绑定工厂 @InitBinder
+			// 内部信息封装： （全局【@ControllerAdvice 修饰】+ handlerType 类型）被 @InitBinder 修饰的 InvocableHandlerMethod(bean, method);
 			WebDataBinderFactory binderFactory = getDataBinderFactory(handlerMethod);
+
+			/** 创建 Model 工厂，内部信息封装：
+			 * 1.attrMethods: （全局【@ControllerAdvice 修饰】+ handlerType 类型）被 @ModelAttribute 修饰的 InvocableHandlerMethod(bean, method);
+			 * 2.binderFactory：数据绑定工厂
+			 * 3.sessionAttrHandler: handlerType 类型被 @SessionAttributes 注解修饰的类
+			 */
 			ModelFactory modelFactory = getModelFactory(handlerMethod, binderFactory);
 
 			// 参数解析
@@ -899,9 +908,10 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			 */
 			mavContainer.addAllAttributes(RequestContextUtils.getInputFlashMap(request));
 			/**
-			 * 会在这个方法里将所有标注了@ModelAttribute的方法调用一遍，并且将该方法相关的ModelAndView放入到mavContainer中：
-			 * 1、最常见的就是 @ModelAttribute 标注的方法入参中有 Map，Model
-			 * 2、如果方法有返回值，那么也会结果处理后放入到mavContainer中（是否只有ModelAndView类型的返回值才能放，有待考察？？）
+			 * 按照以下顺序填充模型:
+			 * 1、检索“已知”的会话属性（这些属性是被列出为{@code @SessionAttributes}），并将 sessionAttributes 合并在 mavContainer 的 ModelMap 中，
+			 * 2、将所有标注了@ModelAttribute 的方法调用一遍，并且将该方法相关的 ModelAndView 放入到 mavContainer 中
+			 * 3、如果方法有返回值，那么也会结果处理后放入到 mavContainer 中
 			 */
 			modelFactory.initModel(webRequest, mavContainer, invocableMethod);
 			mavContainer.setIgnoreDefaultModelOnRedirect(this.ignoreDefaultModelOnRedirect);
@@ -957,7 +967,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		Class<?> handlerType = handlerMethod.getBeanType();
 		Set<Method> methods = this.modelAttributeCache.get(handlerType);
 		if (methods == null) {
-			// 获取 handlerType 类型  所有被 @ModelAttribute 修饰且非 @RequestMapping修饰 的方法
+			// 获取 handlerType 类型内所有被 @ModelAttribute 修饰且非 @RequestMapping 修饰的方法
 			methods = MethodIntrospector.selectMethods(handlerType, MODEL_ATTRIBUTE_METHODS);
 			this.modelAttributeCache.put(handlerType, methods);
 		}
@@ -999,15 +1009,15 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		Class<?> handlerType = handlerMethod.getBeanType();
 		Set<Method> methods = this.initBinderCache.get(handlerType);
 		if (methods == null) {
-			// 获取 handlerType 类型  所有被 @InitBinder 修饰的方法
+			// 获取 handlerType（Controller） 类型  所有被 @InitBinder 修饰的方法
 			methods = MethodIntrospector.selectMethods(handlerType, INIT_BINDER_METHODS);
 			this.initBinderCache.put(handlerType, methods);
 		}
 		List<InvocableHandlerMethod> initBinderMethods = new ArrayList<>();
 		// Global methods first
 		this.initBinderAdviceCache.forEach((clazz, methodSet) -> {
-		    // 判断当前类是否被 ControllerAdviceBean 修饰，
-			// 判断依据位 ControllerAdviceBean上 设置的注解 @ControllerAdvice 内的参数
+			// 判断依据： ControllerAdviceBean 上设置注解 @ControllerAdvice 内的参数值
+			// 从而判断该 handlerType 是否在全局（@ControllerAdviceBean）所属适用范围内
 			if (clazz.isApplicableToBeanType(handlerType)) {
 				Object bean = clazz.resolveBean();
 				for (Method method : methodSet) {
@@ -1050,7 +1060,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	private ModelAndView getModelAndView(ModelAndViewContainer mavContainer,
 			ModelFactory modelFactory, NativeWebRequest webRequest) throws Exception {
 
-		// 1.更新模型
+		// 1.更新模型 ->将列为{@code @SessionAttributes}的模型属性提升到会话中。
 		modelFactory.updateModel(webRequest, mavContainer);
 		if (mavContainer.isRequestHandled()) {
 			return null;

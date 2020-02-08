@@ -395,15 +395,31 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	@Nullable
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
 		List<Match> matches = new ArrayList<>();
+		// 通过 Url 获取 RequestMappingInfo 集合 （map 来自于 urlLookup， 具体意义可参考 RequestMapping 初始化）
 		List<T> directPathMatches = this.mappingRegistry.getMappingsByUrl(lookupPath);
 		if (directPathMatches != null) {
+			/**
+			 * 通过遍历 directPathMatches 中所有 RequestMappingInfo
+			 * 检查给定的RequestMappingInfo是否与当前请求匹配返回一个(可能是新的)实例，该实例的条件与当前请求
+			 *
+			 *  如果存在则返回匹配的信息放入 matches 集合中;
+			 */
 			addMatchingMappings(directPathMatches, matches, request);
 		}
 		if (matches.isEmpty()) {
 			// No choice but to go through all mappings...
+			/** （RequestMappingInfo 来自于 mappingLookup 的 key ，具体意义可参考 RequestMapping 初始化）
+			 * 通过遍历所有 RequestMappingInfo
+			 * 检查给定的RequestMappingInfo是否与当前请求匹配返回一个(可能是新的)实例，该实例的条件与当前请求
+			 * ——例如使用URL模式的子集。
+			 *    --- @RequestMapping(value = "plain/{name}")
+			 *
+			 *  如果存在则返回匹配的信息放入 matches 集合中;
+			 */
 			addMatchingMappings(this.mappingRegistry.getMappings().keySet(), matches, request);
 		}
 
+		// 如果存在多个 Match 排序选择最优的，并将信息放入 request 属性中
 		if (!matches.isEmpty()) {
 			Comparator<Match> comparator = new MatchComparator(getMappingComparator(request));
 			matches.sort(comparator);
