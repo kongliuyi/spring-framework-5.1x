@@ -83,19 +83,17 @@ class ConditionEvaluator {
 	 */
 	public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
 
-		//metadata->StandardAnnotationMetadata   是否为空或者metadata 是否包含@Conditional注解-->
-		// @Conditional注解的功能：按照一定的条件进行判断，满足条件给容器中注册bean
+		// metadata->StandardAnnotationMetadata 是否为空或者 metadata 是否包含 @Conditional 注解-->
+		// @Conditional 注解的功能：按照一定的条件进行判断，满足条件给容器中注册 bean
 		if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
 			return false;
 		}
 
 		if (phase == null) {
 			if (metadata instanceof AnnotationMetadata &&
-					//判断metadata 中的 注解属性 是否含有 @Configuration
-					//@Component,@ComponentScan,@Import,@ImportResource、@Bean
-					//也就是判断是否这个类是否是配置类
+					// 判断 metadata 中的注解属性是否含有 @Configuration
+					// @Component,@ComponentScan,@Import,@ImportResource、@Bean 也就是判断是否这个类是否是配置类
 					ConfigurationClassUtils.isConfigurationCandidate((AnnotationMetadata) metadata)) {
-
 
 				return shouldSkip(metadata, ConfigurationPhase.PARSE_CONFIGURATION);
 			}
@@ -103,10 +101,10 @@ class ConditionEvaluator {
 		}
 
 		List<Condition> conditions = new ArrayList<>();
-		//获取@Conditional 注解的值并进行遍历
+		// 获取 @Conditional 注解的值并进行遍历
 		for (String[] conditionClasses : getConditionClasses(metadata)) {
 			for (String conditionClass : conditionClasses) {
-				//实例化 @Conditional 注解值中的类 例如：MyConditional
+				// 实例化 @Conditional 注解值中的类 例如我的例子：MyConditional
 				Condition condition = getCondition(conditionClass, this.context.getClassLoader());
 				conditions.add(condition);
 			}
@@ -119,7 +117,7 @@ class ConditionEvaluator {
 			if (condition instanceof ConfigurationCondition) {
 				requiredPhase = ((ConfigurationCondition) condition).getConfigurationPhase();
 			}
-			//判断condition 中matches 是否满足条件，若满足-> 当前类Bean需要 被实例化
+			// 判断 condition 中 matches 是否满足条件，若满足-> 当前类 Bean 需要被实例化
 			if ((requiredPhase == null || requiredPhase == phase) && !condition.matches(this.context, metadata)) {
 				return true;
 			}

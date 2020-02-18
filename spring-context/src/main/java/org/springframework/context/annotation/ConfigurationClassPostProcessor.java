@@ -279,16 +279,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
-			/**
-			 *      判断是否是Configuration类，如果加了Configuration下面的这几个注解就不再判断了
+			/*
+			 *      判断是否是 Configuration 类，如果加了 Configuration 下面的这几个注解就不再判断了
 			 * 		candidateIndicators.add(Component.class.getName());
 			 * 		candidateIndicators.add(ComponentScan.class.getName());
 			 * 		candidateIndicators.add(Import.class.getName());
 			 * 		candidateIndicators.add(ImportResource.class.getName());
-			 *
 			 *   	ConfigurationClassUtils.checkConfigurationClassCandidate 作用
-			 *      判断的同时，将 FullConfigurationClass 和 LiteConfigurationClass 赋值，
-			 *     也就是下次循环进入的时候，跳过
+			 *      判断的同时，将 FullConfigurationClass 和 LiteConfigurationClass 赋值，也就是下次循环进入的时候，跳过
 			 */
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
@@ -311,7 +309,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		// Detect any custom bean name generation strategy supplied through the enclosing application context
 		// beanName 生成器
 		SingletonBeanRegistry sbr = null;
-		/**
+		/*
 		 * registry = DefaultListableBeanFactory
 		 * 如果 BeanDefinitionRegistry 是 SingletonBeanRegistry 子类的话,
 		 * 由于我们当前传入的是 DefaultListableBeanFactory,是SingletonBeanRegistry 的子类
@@ -319,9 +317,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		 */
 		if (registry instanceof SingletonBeanRegistry) {
 			sbr = (SingletonBeanRegistry) registry;
-			if (!this.localBeanNameGeneratorSet) {//是否有自定义的
+			// 是否有自定义的
+			if (!this.localBeanNameGeneratorSet) {
 				BeanNameGenerator generator = (BeanNameGenerator) sbr.getSingleton(CONFIGURATION_BEAN_NAME_GENERATOR);
-				// SingletonBeanRegistry中有id为 org.springframework.context.annotation.internalConfigurationBeanNameGenerator
+				// SingletonBeanRegistry 中有 id 为 org.springframework.context.annotation.internalConfigurationBeanNameGenerator
 				// 如果有则利用他的，否则则是spring默认的
 				if (generator != null) {
 					this.componentScanBeanNameGenerator = generator;
@@ -339,16 +338,17 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
 
-		//实例化2个set,candidates用于将之前加入的configCandidates进行去重
-		//因为可能有多个配置类重复了，alreadyParsed用于判断是否处理过
+		// 实例化2个 set,candidates 用于将之前加入的 configCandidates 进行去重
+		// 因为可能有多个配置类重复了，alreadyParsed 用于判断是否处理过
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
 			//这一步才是真正的解析-->
-			// 通过配置类。Component、ComponentScan、Import、ImportResource或者@Configuration
+			// 通过配置类。Component、ComponentScan、Import、ImportResource 或者 @Configuration
 			parser.parse(candidates);
 			parser.validate();
 
+			// 通过 parser.parse 解析出来的 ConfigurationClass 放入 configClasses 集合中
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
 			configClasses.removeAll(alreadyParsed);
 
@@ -359,13 +359,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
 
-			/**
-			 * 将所有扫描出来configClasses 变成 BeanDefinition 注册到bean工厂中
+			/*
+			 * 将所有扫描出来 configClasses 变成 BeanDefinition 注册到bean工厂中
 			 * 这里值得注意的是扫描出来的 BeanDefinition 当中可能包含了特殊类
 			 * 比如 parser.configClasses 当中主要包含的是 importSelector
-			 * 但是 ImportBeanDefinitionRegistrar并不是包含在configClasses当中
-			 * 因为 ImportBeanDefinitionRegistrar在扫描出来的时候
-			 * 已经被添加到一个ConfigurationClass.importBeanDefinitionRegistrars集合中当中去了
+			 * 但是 ImportBeanDefinitionRegistrar 并不是包含在 configClasses 当中
+			 * 因为 ImportBeanDefinitionRegistrar 在扫描出来的时候
+			 * 已经被添加到一个 ConfigurationClass.importBeanDefinitionRegistrars 集合中当中去了
 			 * 而 ConfigurationClass 是引入@Import（ImportBeanDefinitionRegistrar）的配置类 例如：AppConfig
 			 */
 			this.reader.loadBeanDefinitions(configClasses);

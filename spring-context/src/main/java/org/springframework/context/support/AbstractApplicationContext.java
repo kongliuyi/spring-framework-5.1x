@@ -533,7 +533,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
-				/**
+				/*
 				 * 这个方法很重要,就这一个方法，我几乎看看半个月时间
 				 * 调用上下文中注册为bean的工厂处理器。
 				 * 实例化并调用所有已注册的 BeanFactoryPostProcessor bean，
@@ -554,7 +554,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
-				// 初始化特定上下文子类中的其他特殊 bean。
+				// 初始化特定上下文子类中的其他特殊 bean。在 SpringBoot 中 Tomcat 启动一系列动作就在其子类完成
 				onRefresh();
 
 				// Check for listener beans and register them.
