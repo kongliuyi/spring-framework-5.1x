@@ -11,6 +11,11 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @Description
+ * @Author: kongLiuYi
+ * @Date: 2019/11/22 13:35
+ */
 @ControllerAdvice
 public class MyGlobalExceptionHandler {
 

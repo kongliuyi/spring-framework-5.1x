@@ -680,63 +680,64 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 		@Override
 		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
-			//获取注入元素对象
+			// 获取注入元素对象
 			Field field = (Field) this.member;
 			Object value;
-			//如果当前对象在容器中被缓存
+			// 如果当前对象在容器中被缓存
 			if (this.cached) {
-				//根据Bean名称解析缓存中的字段值
+				// 根据Bean名称解析缓存中的字段值
 				value = resolvedCachedArgument(beanName, this.cachedFieldValue);
 			}
 			else {
-				//创建一个字段依赖描述符类
+				// 创建一个字段依赖描述符类
 				DependencyDescriptor desc = new DependencyDescriptor(field, this.required);
 				desc.setContainingClass(bean.getClass());
 				Set<String> autowiredBeanNames = new LinkedHashSet<>(1);
 				Assert.state(beanFactory != null, "No BeanFactory available");
-				//获取容器中的类型转换器
+				// 获取容器中的类型转换器
 				TypeConverter typeConverter = beanFactory.getTypeConverter();
 				try {
-					///核心！获取注入的值,根据容器中Bean定义，解析指定的依赖关系，获取依赖对
+					// 核心！获取注入的值,根据容器中Bean定义，解析指定的依赖关系，获取依赖对
 					value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
 				}
 				catch (BeansException ex) {
 					throw new UnsatisfiedDependencyException(null, beanName, new InjectionPoint(field), ex);
 				}
-				//线程同步，确保容器中数据一致性
+				// 线程同步，确保容器中数据一致性
 				synchronized (this) {
-					//如果当前对象没有被容器缓存
+					// 如果当前对象没有被容器缓存
 					if (!this.cached) {
-						//获取到了当前对象的依赖对象，并且required属性为true
+						// 获取到了当前对象的依赖对象，并且 required 属性为true
 						if (value != null || this.required) {
 							this.cachedFieldValue = desc;
-							//为指定Bean注册依赖的Bean
+							// 为指定Bean注册依赖的Bean
 							registerDependentBeans(beanName, autowiredBeanNames);
 							if (autowiredBeanNames.size() == 1) {
 								String autowiredBeanName = autowiredBeanNames.iterator().next();
-								//如果容器中有指定名称的Bean对象 &  //依赖对象类型和字段类型匹配，默认按类型注入（ByType）
+								// 如果容器中有指定名称的Bean对象 &
+								// 依赖对象类型和字段类型匹配，默认按类型注入（ByType）
 								if (beanFactory.containsBean(autowiredBeanName) &&
 										beanFactory.isTypeMatch(autowiredBeanName, field.getType())) {
-									//创建一个依赖对象的引用，同时缓存
+									// 创建一个依赖对象的引用，同时缓存
 									this.cachedFieldValue = new ShortcutDependencyDescriptor(
 											desc, autowiredBeanName, field.getType());
 								}
 							}
 						}
 						else {
-							//将字段值的缓存设置为null
+							// 将字段值的缓存设置为 null
 							this.cachedFieldValue = null;
 						}
-						//容器已经对当前字段的值缓存
+						// 容器已经对当前字段的值缓存
 						this.cached = true;
 					}
 				}
 			}
-			//如果字段依赖值不为null
+			// 如果字段依赖值不为 null
 			if (value != null) {
-				//显式使用JDK的反射机制，设置自动的访问控制权限为允许访问
+				// 显式使用JDK的反射机制，设置自动的访问控制权限为允许访问
 				ReflectionUtils.makeAccessible(field);
-				//为Bean对象的字段设置值
+				// 为 Bean 对象的字段设置值
 				field.set(bean, value);
 			}
 		}

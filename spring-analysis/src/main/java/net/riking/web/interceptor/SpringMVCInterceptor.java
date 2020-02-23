@@ -7,8 +7,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- *  该类不起作用，待查明。
- *
+ * @Description  由于不是 WEB 环境，该类不起作用。
+ * @Author: kongLiuYi
+ * @Date: 2019/11/22 13:35
  */
 public class SpringMVCInterceptor implements HandlerInterceptor {
 

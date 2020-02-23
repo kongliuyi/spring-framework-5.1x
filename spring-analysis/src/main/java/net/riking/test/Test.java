@@ -1,11 +1,16 @@
 package net.riking.test;
 
 import net.riking.aop.AopBean;
-import net.riking.bean.CarBeanFactoryPostProcessor;
-import net.riking.config.AppConfig;
-import net.riking.dao.UserDao;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import net.riking.inject.bean.CarBeanFactoryPostProcessor;
+import net.riking.inject.config.AppConfig;
+
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+/**
+ * @Description
+ * @Author: kongLiuYi
+ * @Date: 2019/10/22 23:35
+ */
 public class Test {
 
 	public static void main(String[] args) {
@@ -15,8 +20,6 @@ public class Test {
 		applicationContext.refresh();
 		AopBean aopBean = (AopBean) applicationContext.getBean("aopBean");
 		aopBean.testAop();
-		UserDao userDao= (UserDao) applicationContext.getBean("userDao");
-		userDao.findUserList();
 		applicationContext.close();
 	}
 }

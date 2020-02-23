@@ -4,6 +4,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.Stack;
 
+/**
+ * @Description
+ * @Author: kongLiuYi
+ * @Date: 2020/2/23 16:35
+ */
 @Component
 public class AopBean {
 

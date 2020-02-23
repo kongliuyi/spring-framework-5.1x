@@ -70,19 +70,31 @@ import org.springframework.util.StringUtils;
  */
 public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements SingletonBeanRegistry {
 
-	/** Cache of singleton objects: bean name to bean instance. */
+	/**
+	 * 缓存单例 bean, key 为bean 名称,value为 bean 实例.
+	 * Cache of singleton objects: bean name to bean instance.
+	 */
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
-	/** Cache of singleton factories: bean name to ObjectFactory. */
+	/**
+	 * 缓存 beanFactory, key 为 bean 名称,value 为beanFactory.
+	 * Cache of singleton factories: bean name to ObjectFactory.
+	 **/
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
-	/** Cache of early singleton objects: bean name to bean instance. */
+	/**
+	 * 早期单例缓存, key 为 bean 名称,value 为 bean 实例
+	 * Cache of early singleton objects: bean name to bean instance.
+	 */
 	private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
 
-	/** Set of registered singletons, containing the bean names in registration order. */
+	/** 一组已注册的单例 bean 名称，包含按注册顺序排列的 bean 名称。
+	 * Set of registered singletons, containing the bean names in registration order. */
 	private final Set<String> registeredSingletons = new LinkedHashSet<>(256);
 
-	/** Names of beans that are currently in creation. */
+	/**
+	 * 当前正在创建的 bean 的名称。
+	 * Names of beans that are currently in creation. */
 	private final Set<String> singletonsCurrentlyInCreation =
 			Collections.newSetFromMap(new ConcurrentHashMap<>(16));
 
@@ -174,15 +186,16 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
-		//从map中获取bean如果不为空直接返回，不再进行初始化工作
-		//这里一般普通类（通过扫描包）都是为空的
+		// 从 map 中获取 bean 如果不为空直接返回，不再进行初始化工作
+		// 这里一般普通类（通过扫描包）都是为空的
 		Object singletonObject = this.singletonObjects.get(beanName);
-		/**
+		/*
 		 * isSingletonCurrentlyInCreation(beanName)，这一步的主要作用
-		 * 是判断singletonsCurrentlyInCreation集合是否存在当前正在创建指定的单例bean
-		 * 第一次是进入肯定 false，主要原因是 该bean 目前还不满足条件初始化，必须要进行进一步校验（代码继续读下去就知道了）
+		 * 是判断 singletonsCurrentlyInCreation 集合是否存在当前正在创建指定的单例 bean
 		 *
-		 * 如果是true，则说明出现 循环引用了。A->B->A->然后进入这个方法
+		 * 第一次是进入肯定 false，主要原因是该 bean 目前还不满足条件初始化（例如对象属性），必须要进行进一步校验（代码继续读下去就知道了）
+		 *
+		 * 如果是 true，则说明出现循环引用了。A->B->A->然后进入这个方法（A 类属性 B 需要实例化，B 类属性 A 需要实例化）
 		 */
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
@@ -221,11 +234,11 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				if (logger.isDebugEnabled()) {
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
-				/**
-				 * 将beanName添加到singletonsCurrentlyInCreation这样一个set集合中
-				 * 表示beanName对应的bean正在创建中
+				/*
+				 * 将 beanName 添加到 singletonsCurrentlyInCreation 这样一个 set 集合中
+				 * 表示 beanName 对应的 bean 正在创建中.表明这里已经完成进一步校验了，符合了创建 bean 的规则了
 				 *
-				 * 和之前的类似，这里已经完成进一步校验了，符合了创建bean的规则了
+				 * 在之前我们有一段代码 isSingletonCurrentlyInCreation(beanName) 对应。
 				 */
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;
@@ -257,15 +270,15 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (recordSuppressedExceptions) {
 						this.suppressedExceptions = null;
 					}
-					// 最后这里要beanName从singletonsCurrentlyInCreation移除
+					// 最后这里要 beanName 从 singletonsCurrentlyInCreation 移除，代表这个 bean 已经创建完了
 					afterSingletonCreation(beanName);
 				}
 				if (newSingleton) {
-					/**
-					 * 			this.singletonObjects.put(beanName, singletonObject);
-					 * 			this.singletonFactories.remove(beanName);
-					 * 			this.earlySingletonObjects.remove(beanName);
-					 * 			this.registeredSingletons.add(beanName);
+					/*
+					 * 	this.singletonObjects.put(beanName, singletonObject);
+					 * 	this.singletonFactories.remove(beanName);
+					 * 	this.earlySingletonObjects.remove(beanName);
+					 * 	this.registeredSingletons.add(beanName);
 					 */
 					addSingleton(beanName, singletonObject);
 				}

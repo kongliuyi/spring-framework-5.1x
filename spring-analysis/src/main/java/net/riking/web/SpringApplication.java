@@ -1,6 +1,6 @@
 package net.riking.web;
 
-import net.riking.config.AppConfig;
+import net.riking.inject.config.AppConfig;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
@@ -8,7 +8,11 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.io.File;
-
+/**
+ * @Description
+ * @Author: kongLiuYi
+ * @Date: 2019/11/22 13:35
+ */
 public class SpringApplication {
 
 	public static void  run  () throws LifecycleException {

@@ -178,6 +178,7 @@ public class InitDestroyAnnotationBeanPostProcessor
 	private LifecycleMetadata findLifecycleMetadata(Class<?> clazz) {
 		if (this.lifecycleMetadataCache == null) {
 			// Happens after deserialization, during destruction...
+			// 构建 LifecycleMetadata 类
 			return buildLifecycleMetadata(clazz);
 		}
 		// Quick check on the concurrent map first, with minimal locking.
@@ -186,6 +187,7 @@ public class InitDestroyAnnotationBeanPostProcessor
 			synchronized (this.lifecycleMetadataCache) {
 				metadata = this.lifecycleMetadataCache.get(clazz);
 				if (metadata == null) {
+					// 通过当前 class 构建 LifecycleMetadata 信息，封装被 @PostConstruct 和 @PreDestroy 注解修饰的方法
 					metadata = buildLifecycleMetadata(clazz);
 					this.lifecycleMetadataCache.put(clazz, metadata);
 				}
@@ -220,12 +222,15 @@ public class InitDestroyAnnotationBeanPostProcessor
 				}
 			});
 
+			// 收集 InitMethod 方法
 			initMethods.addAll(0, currInitMethods);
+			// 收集 DestroyMethod 方法
 			destroyMethods.addAll(currDestroyMethods);
 			targetClass = targetClass.getSuperclass();
 		}
 		while (targetClass != null && targetClass != Object.class);
 
+		// 封装
 		return new LifecycleMetadata(clazz, initMethods, destroyMethods);
 	}
 

@@ -8,7 +8,11 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-
+/**
+ * @Description
+ * @Author: kongLiuYi
+ * @Date: 2019/11/22 13:35
+ */
 public class CommonInterceptor  extends HandlerInterceptorAdapter{
 
 	protected final Log log = LogFactory.getLog(getClass());

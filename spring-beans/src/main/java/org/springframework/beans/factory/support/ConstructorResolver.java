@@ -117,17 +117,17 @@ class ConstructorResolver {
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			@Nullable Constructor<?>[] chosenCtors, @Nullable Object[] explicitArgs) {
 
-		//实例化一个BeanWrapperImpl implements BeanWrapper
+		// 实例化一个 BeanWrapperImpl implements BeanWrapper
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
 		Constructor<?> constructorToUse = null;
 		ArgumentsHolder argsHolderToUse = null;
 		Object[] argsToUse = null;
-		/**
+		/*
 		 * explicitArgs：构造方法的参数列表给定了具体的值， 目前是null，还不清楚如何设置值
 		 * 确定的参数值列表具体的值
-		 * argsToUse可以有两种办法设置
+		 * argsToUse 可以有两种办法设置
 		 * 第一种通过beanDefinition设置，第二种通过xml设置
 		 */
 		if (explicitArgs != null) {
@@ -136,7 +136,7 @@ class ConstructorResolver {
 		else {
 			Object[] argsToResolve = null;
 			synchronized (mbd.constructorArgumentLock) {
-				/**
+				/*
 				 * 获取已解析的构造方法
 				 * 一般不会有，因为构造方法一般会提供一个
 				 * 除非有多个。那么才会存在已经解析完成的构造方法
@@ -154,10 +154,10 @@ class ConstructorResolver {
 				argsToUse = resolvePreparedArguments(beanName, mbd, bw, constructorToUse, argsToResolve, true);
 			}
 		}
-		//如果没有已经解析的构造方法，则需要去解析构造方法，
+		// 如果没有已经解析的构造方法，则需要去解析构造方法，
 		if (constructorToUse == null || argsToUse == null) {
 			// Take specified constructors, if any.
-			//将传入的构造函数数组赋予candidates
+			// 将传入的构造函数数组赋予 candidates
 			Constructor<?>[] candidates = chosenCtors;
 			if (candidates == null) {
 				Class<?> beanClass = mbd.getBeanClass();
@@ -174,7 +174,7 @@ class ConstructorResolver {
 
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
-				//如果是无参构造方法，直接设置默认值，并直接实例化
+				// 如果是无参构造方法，直接设置默认值，并直接实例化
 				if (uniqueCandidate.getParameterCount() == 0) {
 					synchronized (mbd.constructorArgumentLock) {
 						mbd.resolvedConstructorOrFactoryMethod = uniqueCandidate;
@@ -187,24 +187,24 @@ class ConstructorResolver {
 			}
 
 			// Need to resolve the constructor.
-			//chosenCtors 判断构造方法是否为空，判断是否根据构造方法自动注入
+			// chosenCtors 判断构造方法是否为空，判断是否根据构造方法自动注入
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
 			ConstructorArgumentValues resolvedValues = null;
 
-			//定义了最小参数个数
+			// 定义了最小参数个数
 			int minNrOfArgs;
-			//如果你给构造方法的参数列表给定了具体的值
-			//那么这些值得个数就是构造方法参数的个数
+			// 如果你给构造方法的参数列表给定了具体的值
+			// 那么这些值得个数就是构造方法参数的个数
 			if (explicitArgs != null) {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
-				//实例一个对象，用来存放构造方法的参数值
-				//当中主要存放了参数值和参数值所对应的下表
+				// 实例一个对象，用来存放构造方法的参数值
+				// 当中主要存放了参数值和参数值所对应的下表
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
-				/**
+				/*
 				 * 确定构造方法参数数量,就是在某个时期，你传入了某个必须用在构造函数的值
 				 * 我目前发现有两种，第一种通过xml配置，如下：
 				 *     <bean id="cat" class="net.riking.bean.Cat">
@@ -213,16 +213,16 @@ class ConstructorResolver {
 				 *         <constructor-arg index="2" value="str2"/>
 				 *     </bean>
 				 *
-				 *     在通过spring内部给了一个值得情况那么表示你的构造方法的最小参数个数一定minNrOfArgs = 3
+				 *     在通过spring内部给了一个值得情况那么表示你的构造方法的最小参数个数一定 minNrOfArgs = 3
 				 *  第二种：
-				 *  通过扩展点直接给值，例如：MapperScannerRegistrar类中
+				 *  通过扩展点直接给值，例如：MapperScannerRegistrar 类中
 				 *  bd.getConstructorArgumentValues().addGenericArgumentValue(UserDao.class);
 				 *
 				 */
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
-			/**
+			/*
 			 * 根据构造方法的访问权限级别和参数数量进行排序,怎么排序的呢？如下：
 			 *  有限反问权限，继而参数个数
 			 * 1. public Cat(Object o1, Object o2, Object o3)
@@ -233,15 +233,16 @@ class ConstructorResolver {
 			 * 6. protected Cat(Integer i, Object o1)
 			 */
 			AutowireUtils.sortConstructors(candidates);
-			int minTypeDiffWeight = Integer.MAX_VALUE;//默认最大值
+			// 默认最大值
+			int minTypeDiffWeight = Integer.MAX_VALUE;
 			Set<Constructor<?>> ambiguousConstructors = null;
 			LinkedList<UnsatisfiedDependencyException> causes = null;
 
-			//循环所有的构造方法
+			// 循环所有的构造方法
 			for (Constructor<?> candidate : candidates) {
 				Class<?>[] paramTypes = candidate.getParameterTypes();
 
-				/**
+				/*
 				 * 这个判断别看只有一行代码理解起来很费劲
 				 * 1.constructorToUse != null，前面已经说明 constructorToUse
 				 * 主要是用来放已经解析过了并且已经在使用的构造方法，只有在他等于空的情况下，
@@ -264,10 +265,10 @@ class ConstructorResolver {
 				}
 
 				ArgumentsHolder argsHolder;
-				//根据上文赋值resolvedValues，这里可以认为参数列表的值 null的情况下
+				// 根据上文赋值 resolvedValues，这里可以认为参数列表的值 null 的情况下
 				if (resolvedValues != null) {
 					try {
-						/**
+						/*
 						 * 判断是否加了ConstructorProperties注解如果加了则把值取出来
 						 * 例如：@ConstructorProperties(value = {"dog", "111"})
 						 */
@@ -275,20 +276,21 @@ class ConstructorResolver {
 						if (paramNames == null) {
 							ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
 							if (pnd != null) {
-								/**获取构造方法参数名称列表
+								/*
+								 * 获取构造方法参数名称列表
 								 * 假设你有一个（String catStringOne,Dog dog）
-								 * 则paramNames=[ catStringOne ,dog]
+								 * 则 paramNames=[ catStringOne ,dog]
 								 */
 								paramNames = pnd.getParameterNames(candidate);
 							}
 						}
-						/**
+						/*
 						 * 获取构造方法参数值列表
 						 * 这个方法很复杂，我就跟过一次代码，所以不一定对
-						 * 1.通过构造方法参数类型从IOC获取参数值，如果获取的值有多个，就按参数列表的名字
-						 * 类似 byType||byName 例如   Cat(IDogService dogService1)
-						 *  首先看 IDogService，有两个实现类，DogService1，DogService2
-						 *  再然后看参数名dogService1，最后注入DogService1 对象
+						 * 1.通过构造方法参数类型从 IOC 中获取参数值，如果获取的值有多个，就按参数列表的名字
+						 * 类似 byType||byName 例如 Cat(IDogService dogService1)
+						 * 首先看 IDogService，有两个实现类，DogService1，DogService2
+						 * 再然后看参数名dogService1，最后注入DogService1 对象
 						 */
 						argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
 								getUserDeclaredConstructor(candidate), autowiring, candidates.length == 1);
@@ -313,7 +315,7 @@ class ConstructorResolver {
 					argsHolder = new ArgumentsHolder(explicitArgs);
 				}
 
-				/**
+				/*
 				 * typeDiffWeight 差异量，何谓差异量呢？
 				 * argsHolder.arguments和paramTypes之间的差异
 				 * 每个参数值得类型与构造方法参数列表的类型直接的差异
@@ -341,11 +343,14 @@ class ConstructorResolver {
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
 				// Choose this constructor if it represents the closest match.
 				if (typeDiffWeight < minTypeDiffWeight) {
-					constructorToUse = candidate;//当前循环时期合适的 构造方法
-					argsHolderToUse = argsHolder;//当前循环时期合适的参数列表值
+					// 当前循环时期合适的构造方法
+					constructorToUse = candidate;
+					// 当前循环时期合适的参数列表值
+					argsHolderToUse = argsHolder;
 					argsToUse = argsHolder.arguments;
-					minTypeDiffWeight = typeDiffWeight;//
-					ambiguousConstructors = null; //如果有多个合适的构造方法，我就清空他，防止后面的跑出异常
+					minTypeDiffWeight = typeDiffWeight;
+					// 如果有多个合适的构造方法，我就清空他，防止后面的跑出异常
+					ambiguousConstructors = null;
 				}
 				else if (constructorToUse != null && typeDiffWeight == minTypeDiffWeight) {
 					if (ambiguousConstructors == null) {
@@ -356,8 +361,7 @@ class ConstructorResolver {
 				}
 			}
 
-			//循环结束
-			//没有找打合适的构造方法
+			// 循环结束,没有找打合适的构造方法
 			if (constructorToUse == null) {
 				if (causes != null) {
 					UnsatisfiedDependencyException ex = causes.removeLast();
@@ -370,7 +374,7 @@ class ConstructorResolver {
 						"Could not resolve matching constructor " +
 						"(hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)");
 			}
-			//上面注释当中有说明为什么会在这里判断合适的构造方法有多个情况，并且是在严格模式下解析构造函数。则抛出异常
+			// 上面注释当中有说明为什么会在这里判断合适的构造方法有多个情况，并且是在严格模式下解析构造函数。则抛出异常
 			else if (ambiguousConstructors != null && !mbd.isLenientConstructorResolution()) {
 				throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 						"Ambiguous constructor matches found in bean '" + beanName + "' " +
@@ -378,7 +382,7 @@ class ConstructorResolver {
 						ambiguousConstructors);
 			}
 
-			/**
+			/*
 			 * 缓存相关信息，比如：
 			 *   1. 已解析出的构造方法对象 resolvedConstructorOrFactoryMethod
 			 *   2. 构造方法参数列表是否已解析标志 constructorArgumentsResolved
