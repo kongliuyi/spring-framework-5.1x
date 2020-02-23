@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 /**
- * @Description
+ * @Description 由于不是 WEB 环境，该类不起作用。
  * @Author: kongLiuYi
  * @Date: 2019/11/22 13:35
  */

@@ -51,6 +51,7 @@ final class SimpleMetadataReader implements MetadataReader {
 		InputStream is = new BufferedInputStream(resource.getInputStream());
 		ClassReader classReader;
 		try {
+			// asm 框架读取 class 文件
 			classReader = new ClassReader(is);
 		}
 		catch (IllegalArgumentException ex) {
@@ -61,6 +62,7 @@ final class SimpleMetadataReader implements MetadataReader {
 			is.close();
 		}
 
+		// 采用访问者模式来获取 class 类信息
 		AnnotationMetadataReadingVisitor visitor = new AnnotationMetadataReadingVisitor(classLoader);
 		classReader.accept(visitor, ClassReader.SKIP_DEBUG);
 

@@ -535,7 +535,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Invoke factory processors registered as beans in the context.
 				/*
 				 * 这个方法很重要,就这一个方法，我几乎看看半个月时间
-				 * 调用上下文中注册为bean的工厂处理器。
+				 * 调用上下文中注册为 bean 的工厂处理器。
 				 * 实例化并调用所有已注册的 BeanFactoryPostProcessor bean，
 				 * 注意：要区分 BeanFactoryPostProcessor与ProcessBeanFactory,两者不同
 				 */
@@ -613,7 +613,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
-		//在上下文环境中初始化任何占位符属性源。这个方法目前没有子类去实现
+		// 在上下文环境中初始化任何占位符属性源。这个方法目前没有子类去实现
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
@@ -666,13 +666,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		// Tell the internal bean factory to use the context's class loader etc.
 		beanFactory.setBeanClassLoader(getClassLoader());
-		//bean表达式解释器,能够获取bean当中的属性在前台页面
+		// bean表达式解释器,能够获取bean当中的属性在前台页面
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
-		//对象与string类型的转换  例如： <property red="dogDao">
+		// 对象与string类型的转换  例如： <property red="dogDao">
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks. 使用上下文回调配置bean工厂
-		//添加一个后置管理器  能够在bean中获得到各种*Aware（*Aware都有其作用）
+		// 添加一个后置管理器  能够在bean中获得到各种*Aware（*Aware都有其作用）
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
@@ -701,8 +701,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 
-		//意思是如果自定义的Bean中没有名为"systemProperties"和"systemEnvironment"的Bean，则注册
-		//这两个Bean就是一些系统配置和系统环境信息，通过org.springframework.core.env.StandardEnvironment 其父类构造生成
+		// 意思是如果自定义的Bean中没有名为"systemProperties"和"systemEnvironment"的Bean，则注册
+		// 这两个Bean就是一些系统配置和系统环境信息，通过org.springframework.core.env.StandardEnvironment 其父类构造生成
 		// Register default environment beans.
 		if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
 			beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment());
@@ -732,12 +732,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.必须在单例化之前调用。
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
-		/**
+		/*
 		 *
-		 * 这个地方需要注意getBeanFactoryPostProcessors()是获取手动给spring的BeanFactoryPostProcessor
-		 * 自定义并不仅仅是程序员自己写的，自己写的可以分为是加@Companent 还是没有加，
-		 * 如果加了@Companent getBeanFactoryPostProcessors()这个方法获取不到，因为是spring自己扫描的
-		 * 如果不加@Companent（需要手动调用AnnotationConfigApplicationContext.addBeanFactoryPostProcessor()注入），getBeanFactoryPostProcessors()这个地方才能获取到;
+		 * 这个地方需要注意 getBeanFactoryPostProcessors()是获取手动给spring的 BeanFactoryPostProcessor
+		 * 自定义并不仅仅是程序员自己写的，自己写的可以分为是加 @Component 还是没有加，
+		 * 如果加了 @Component getBeanFactoryPostProcessors() 这个方法获取不到，因为是 spring 自己扫描的
+		 * 如果不加 @Component（需要手动调用AnnotationConfigApplicationContext.addBeanFactoryPostProcessor()注入），
+		 * getBeanFactoryPostProcessors()这个地方才能获取到;
 		 * 为什么得不到? 因为getBeanFactoryPostProcessors()这个方法是直接获取一个list，
 		 * 这个list是在AnnotationConfigApplicationContext被定义
 		 * 所谓的自定义的就是你手动调用AnnotationConfigApplicationContext.addBeanFactoryPostProcesor();

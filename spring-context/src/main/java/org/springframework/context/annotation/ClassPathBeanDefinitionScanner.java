@@ -163,6 +163,13 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		this.registry = registry;
 
 		if (useDefaultFilters) {
+			/*
+			 * 默认注册过滤器，默认有三种，其第三个不存在
+			 * 1.有 @Component 以及隐式注册（继承 Component 注解）
+			 *   隐式注册例如: @Repository 、@Service、@Controller
+			 * 2.Java EE 6的{@link javax.annotation。ManagedBean}
+			 * 3.JSR-330的{@link javax.inject}
+			 */
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);
@@ -280,7 +287,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				candidate.setScope(scopeMetadata.getScopeName());
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
 				/*
-				 * 通过包扫描生成的BeanDefinition有两种
+				 * 通过包扫描生成的 BeanDefinition 有两种
 				 * 1.通过索引生成：  AnnotatedGenericBeanDefinition extends GenericBeanDefinition
 				 * 2.通过非索引生成：ScannedGenericBeanDefinition   extends GenericBeanDefinition
 				 *

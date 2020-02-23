@@ -315,9 +315,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 * @return a corresponding Set of autodetected bean definitions
 	 */
 	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
-		/**
-		 *  索引（一般不建议开启 spring.index.ignore=true）
-		 *  通过ClassPathScanningCandidateComponentProvider.setResourceLoader方法
+		/*
+		 *  索引（一般不建议开启 spring.index.ignore = true）
+		 *  通过 ClassPathScanningCandidateComponentProvider.setResourceLoader 方法
 		 *  开启索引方式：创建文件 META-INF/spring.components,内容spring.index.ignore=true
 		 */
 		if (this.componentsIndex != null && indexSupportsIncludeFilters()) {
@@ -429,7 +429,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
-			//asm 读取class文件
+			// 1.获取包下的class文件路径,每一个class文件的路径封装成Resource对象.
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
@@ -439,11 +439,14 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				}
 				if (resource.isReadable()) {
 					try {
+						// 2.使用 asm 框架读取 class 文件,获取类的定义信息 ->CachingMetadataReaderFactory
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						// 3.执行 excludeFilters 以及 includeFilters (在前面[ComponentScanAnnotationParser.parse]知道有默认的三个过滤器[在有相应的 Class])
 						if (isCandidateComponent(metadataReader)) {
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setResource(resource);
 							sbd.setSource(resource);
+							// 4.进一步判断
 							if (isCandidateComponent(sbd)) {
 								if (debugEnabled) {
 									logger.debug("Identified candidate component class: " + resource);
@@ -477,6 +480,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		catch (IOException ex) {
 			throw new BeanDefinitionStoreException("I/O failure during classpath scanning", ex);
 		}
+		// 5.返回 BeanDefinition 集合
 		return candidates;
 	}
 

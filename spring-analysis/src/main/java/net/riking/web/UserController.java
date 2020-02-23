@@ -45,7 +45,11 @@ public class UserController {
 		return "index";
 	}
 
-	// 也可以通过@ModelAttribute获取
+	/**
+	 * 也可以通过 @ModelAttribute 获取
+	 * @param md
+	 * @return
+	 */
 	@GetMapping("/index2")
 	public String index(@ModelAttribute("md") Map<String, Object> md ) {
 		System.out.println(md.get("gender"));

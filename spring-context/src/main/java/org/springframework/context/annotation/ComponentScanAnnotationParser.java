@@ -76,7 +76,8 @@ class ComponentScanAnnotationParser {
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
 
 		// 第一句代码就看出了端倪：原来扫描的工作最终还是委托给了 ClassPathBeanDefinitionScanner 去做
-		// 注意1：useDefaultFilters这个值特别的重要，能够解释伙伴们为何要配置的原因
+		// 注意1：useDefaultFilters 这个值特别的重要，能够解释伙伴们为何要配置的原因，
+		// 例如：@Component、@Repository 、@Service、@Controller 修饰为什么会注入进 IOC 中
 		// 注意2：新建 AnnotationConfigApplicationContext 实例化时，也有 ClassPathBeanDefinitionScanner,
 		// 但是不在参与解析，这里才是真正的参与解析，
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
@@ -113,7 +114,7 @@ class ComponentScanAnnotationParser {
 			}
 		}
 
-		// Spring4.1后出现的 默认false。哪怕我是扫描的 Bean，也支持懒加载啦
+		// Spring4.1后出现的 默认 false。哪怕我是扫描的 Bean，也支持懒加载啦
 		boolean lazyInit = componentScan.getBoolean("lazyInit");
 		if (lazyInit) {
 			scanner.getBeanDefinitionDefaults().setLazyInit(true);

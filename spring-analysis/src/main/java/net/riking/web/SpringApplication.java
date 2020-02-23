@@ -1,6 +1,7 @@
 package net.riking.web;
 
-import net.riking.inject.config.AppConfig;
+
+import net.riking.web.config.WebConfig;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
@@ -17,7 +18,7 @@ public class SpringApplication {
 
 	public static void  run  () throws LifecycleException {
 		AnnotationConfigWebApplicationContext acwc = new AnnotationConfigWebApplicationContext();
-		acwc.register(AppConfig.class);
+		acwc.register(WebConfig.class);
 		acwc.refresh();
 		File baseDir =new File(System.getProperty("java.io.tmpdir"));
 		Tomcat tomcat = new Tomcat();

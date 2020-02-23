@@ -3,7 +3,7 @@ package net.riking.inject.config;
 
 import net.riking.inject.bean.Dog;
 import org.springframework.context.annotation.*;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
+
 /**
  * @Description
  * @Author: kongLiuYi
@@ -32,13 +32,7 @@ public class AppConfig {
 	}
 
 
-	@Bean
-	public InternalResourceViewResolver viewResolver(){
-		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
-		viewResolver.setPrefix("/views/");
-		viewResolver.setSuffix(".jsp");
-		return viewResolver;
-	}
+
 
 
 }
