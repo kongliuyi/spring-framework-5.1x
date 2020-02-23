@@ -212,6 +212,8 @@ final class ConfigurationClass {
 
 	public void validate(ProblemReporter problemReporter) {
 		// A configuration class may not be final (CGLIB limitation)
+		// 因为配置累即被 @Configuration 修饰的类会被 CGLIB 代理。这里有强制校验配置类不能被 final 修饰 (CGLIB限制)
+		// 注：在 spring5.2x 改变了，@Configuration(proxyBeanMethods=false) 来取消 CGLIB 代理
 		if (getMetadata().isAnnotated(Configuration.class.getName())) {
 			if (getMetadata().isFinal()) {
 				problemReporter.error(new FinalConfigurationProblem());

@@ -72,7 +72,8 @@ abstract class ConfigurationClassUtils {
 
 	/**
 	 *
-	 * 检查给定的bean定义是否是配置类的候选对象(或在配置/组件类中声明的嵌套组件类，也可以自动注册)，并相应地进行标记。
+	 * 检查给定的 BeanDefinition 是否是配置类的候选对象(或在配置/组件类中声明的嵌套组件类，也可以自动注册)，
+	 * 并相应地进行标记。
 	 * Check whether the given bean definition is a candidate for a configuration class
 	 * (or a nested component class declared within a configuration/component class,
 	 * to be auto-registered as well), and mark it accordingly.
@@ -91,17 +92,17 @@ abstract class ConfigurationClassUtils {
 		}
 
 		AnnotationMetadata metadata;
-		/**
-		 * 		如果BeanDefinition 是 AnnotatedBeanDefinition的实例,并且className 和 BeanDefinition中 的元数据 的类名相同
-		 * 		则直接从BeanDefinition 获得Metadata
+		/*
+		 * 	如果 BeanDefinition 是 AnnotatedBeanDefinition 的实例,并且 className 和 BeanDefinition 中元数据的类名相同
+		 * 	则直接从 BeanDefinition 获得 Metadata
 		 */
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
 			metadata = ((AnnotatedBeanDefinition) beanDef).getMetadata();
 		}
-		/**
-		 *  如果BeanDefinition 是 AbstractBeanDefinition的实例,并且beanDef 有 beanClass 属性存在
+		/*
+		 *  如果 BeanDefinition 是 AbstractBeanDefinition 的实例,并且 beanDef 有 beanClass 属性存在
 		 * 	则实例化StandardAnnotationMetadata
 		 */
 		else if (beanDef instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) beanDef).hasBeanClass()) {
@@ -124,20 +125,20 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
-		//判断当前这个bd中存在的类是不是加了@Configruation注解,
-		// 如果存在则spring认为他是一个全注解的类，key--》ConfigurationClassPostProcessorConfigurationClass
+		// 判断当前这个 bd 中存在的类是不是加了@Configruation 注解,
+		// 如果存在则 spring 认为他是一个全注解的类，key--》ConfigurationClassPostProcessorConfigurationClass
 		if (isFullConfigurationCandidate(metadata)) {
-			//如果存在Configuration 注解,则为BeanDefinition 设置configurationClass属性为full
+			// 如果存在 Configuration 注解,则为 bd 设置 configurationClass 属性为 full
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
-		/**
-		 *  如果不存在@Configuration注解
-		 * 	则判断是否加了以下注解，摘录isLiteConfigurationCandidate的源码
+		/*
+		 *  如果不存在 @Configuration 注解
+		 * 	则判断是否加了以下注解，摘录 isLiteConfigurationCandidate 的源码
 		 * 	candidateIndicators.add(Component.class.getName());
 		 * 	candidateIndicators.add(ComponentScan.class.getName());
 		 * 	candidateIndicators.add(Import.class.getName());
 		 * 	candidateIndicators.add(ImportResource.class.getName());
-		 * 	如果存在则spring认为是一个部分注解类，放进beanDef属性中 key--》ConfigurationClassPostProcessorConfigurationClass
+		 * 	如果存在则 spring 认为是一个部分注解类，放进 beanDef 属性中 key--》ConfigurationClassPostProcessorConfigurationClass
 		 */
 		else if (isLiteConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
@@ -147,7 +148,7 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
-		// 如果这个类是全注解或者部分注解的话，且这个类存在Order的值，就放进ConfigurationClassPostProcessorOrder属性中
+		// 如果这个类是全注解或者部分注解的话，且这个类存在 Order 的值，就设置 ConfigurationClassPostProcessorOrder 属性中
 		Integer order = getOrder(metadata);
 		if (order != null) {
 			beanDef.setAttribute(ORDER_ATTRIBUTE, order);

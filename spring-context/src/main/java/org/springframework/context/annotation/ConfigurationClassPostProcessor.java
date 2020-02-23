@@ -346,6 +346,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			//这一步才是真正的解析-->
 			// 通过配置类。Component、ComponentScan、Import、ImportResource 或者 @Configuration
 			parser.parse(candidates);
+			// 校验 配置类不能使final的，因为需要使用CGLIB生成代理对象，见 postProcessBeanFactory方法
+			// 注：在 spring5.2x 改变了，@Configuration(proxyBeanMethods=false) 来取消 CGLIB 代理
 			parser.validate();
 
 			// 通过 parser.parse 解析出来的 ConfigurationClass 放入 configClasses 集合中
@@ -360,32 +362,37 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 
 			/*
-			 * 将所有扫描出来 configClasses 变成 BeanDefinition 注册到bean工厂中
+			 * 将所有扫描出来 configClasses 变成 BeanDefinition 注册到 bean 工厂中
 			 * 这里值得注意的是扫描出来的 BeanDefinition 当中可能包含了特殊类
 			 * 比如 parser.configClasses 当中主要包含的是 importSelector
 			 * 但是 ImportBeanDefinitionRegistrar 并不是包含在 configClasses 当中
 			 * 因为 ImportBeanDefinitionRegistrar 在扫描出来的时候
 			 * 已经被添加到一个 ConfigurationClass.importBeanDefinitionRegistrars 集合中当中去了
 			 * 而 ConfigurationClass 是引入@Import（ImportBeanDefinitionRegistrar）的配置类 例如：AppConfig
+			 *
+			 * 这个方法是非常重要的，因为它决定了向容器注册Bean定义信息的顺序问题
 			 */
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 
 			candidates.clear();
-			//由于我们这里进行了扫描，把扫描出来的BeanDefinition注册给了factory
-			//所以这里 BeanDefinition 必定大于 原来的  BeanDefinition 数
+			// 由于我们这里进行了扫描，把扫描出来的 BeanDefinition 注册给了 factory
+			// 所以这里 BeanDefinition 大于原来的  BeanDefinition 数
 			if (registry.getBeanDefinitionCount() > candidateNames.length) {
-				//扫描并注册完后所有BeanDefinition 名称
+				// 扫描并注册完后所有 BeanDefinition 名称
 				String[] newCandidateNames = registry.getBeanDefinitionNames();
-				//扫描并注册完前所有BeanDefinition 名称
+				// 扫描并注册完前所有 BeanDefinition 名称
 				Set<String> oldCandidateNames = new HashSet<>(Arrays.asList(candidateNames));
 				Set<String> alreadyParsedClasses = new HashSet<>();
 				for (ConfigurationClass configurationClass : alreadyParsed) {
 					alreadyParsedClasses.add(configurationClass.getMetadata().getClassName());
 				}
 				for (String candidateName : newCandidateNames) {
+					// 若老的 oldCandidateNames 不包含。也就是说你是新进来的候选的 BeanDefinition，那就进一步的进行一个处理
+					// 比如这里的 AspectjConfig，他就是新进的，因此它继续往下走
 					if (!oldCandidateNames.contains(candidateName)) {
 						BeanDefinition bd = registry.getBeanDefinition(candidateName);
+						// 首先检查这个类是否是配置类，如果是配置类就进行第二个判断 -> 目前不知道在何种情况下才能通过
 						if (ConfigurationClassUtils.checkConfigurationClassCandidate(bd, this.metadataReaderFactory) &&
 								!alreadyParsedClasses.contains(bd.getBeanClassName())) {
 							candidates.add(new BeanDefinitionHolder(bd, candidateName));
@@ -398,16 +405,17 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		while (!candidates.isEmpty());
 
 		// Register the ImportRegistry as a bean in order to support ImportAware @Configuration classes
-		//将ImportStack注册为bean，以支持ImportAware @Configuration类
+		// 将 ImportStack 注册为 bean，以支持 ImportAware @Configuration 类
 		if (sbr != null && !sbr.containsSingleton(IMPORT_REGISTRY_BEAN_NAME)) {
 			sbr.registerSingleton(IMPORT_REGISTRY_BEAN_NAME, parser.getImportRegistry());
 		}
 
+		// 清楚缓存，元数据缓存
 		if (this.metadataReaderFactory instanceof CachingMetadataReaderFactory) {
 			// Clear cache in externally provided MetadataReaderFactory; this is a no-op
 			// for a shared cache since it'll be cleared by the ApplicationContext.
-			//清除外部提供的MetadataReaderFactory中的缓存;这是无效的
-			//对于共享缓存，因为它将被ApplicationContext清除。
+			// 清除外部提供的 MetadataReaderFactory 中的缓存;
+			// 这是无效的对于共享缓存，因为它将被 ApplicationContext 清除。
 			((CachingMetadataReaderFactory) this.metadataReaderFactory).clearCache();
 		}
 	}

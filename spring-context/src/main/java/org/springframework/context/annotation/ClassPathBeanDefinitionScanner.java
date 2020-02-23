@@ -272,15 +272,14 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
-			//扫描basePackage路径下的java文件
-			//符合条件的并把它转成BeanDefinition类型
+			// 扫描 basePackage 路径下的 .class 文件。符合条件的并把它转成 BeanDefinition 类型
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
-				//解析scope属性
+				// 解析scope属性
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
-				/**
+				/*
 				 * 通过包扫描生成的BeanDefinition有两种
 				 * 1.通过索引生成：  AnnotatedGenericBeanDefinition extends GenericBeanDefinition
 				 * 2.通过非索引生成：ScannedGenericBeanDefinition   extends GenericBeanDefinition
@@ -290,10 +289,10 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				 * 按道理都进入这个判断条件,为什么加这个判断条件--->不清楚
 				 */
 				if (candidate instanceof AbstractBeanDefinition) {
-					//如果这个类是AbstractBeanDefinition的子类，则为他设置默认值，比如lazy，init destory
+					// 如果这个类是 AbstractBeanDefinition 的子类，则为他设置默认值，比如 lazy，init destory
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
-				/**
+				/*
 				 * 通过包扫描生成的BeanDefinition有两种
 				 * 1.通过索引生成：  AnnotatedGenericBeanDefinition implements AnnotatedBeanDefinition
 				 * 2.通过非索引生成：ScannedGenericBeanDefinition   implements AnnotatedBeanDefinition
@@ -301,22 +300,22 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				 * 按道理都进入这个判断条件,为什么加这个判断条件--->不清楚
 				 */
 				if (candidate instanceof AnnotatedBeanDefinition) {
-					/**
+					/*
 					 * 检查并且处理常用的注解
-					 * 这里的处理主要是指把常用注解的值设置到AnnotatedBeanDefinition当中
+					 * 这里的处理主要是指把常用注解的值设置到 AnnotatedBeanDefinition当中
 					 * 常用注解：Lazy.class  Primary.class  Role.class  Description.class
 					 * 当前前提是这个类必须是AnnotatedBeanDefinition类型的，说白了就是加了注解的类
 					 */
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
-				//1.检查 BeanDefinition在工厂中是否已经存在BeanDefinition，否->返回true，是进入2
-				//2.确定新 BeanDefinition 是否兼容已经存在的BeanDefinition。
+				// 1.检查 BeanDefinition 在工厂中是否已经存在 BeanDefinition，否->返回true，是进入2
+				// 2.确定新 BeanDefinition 是否兼容已经存在的 BeanDefinition。兼容就不管，否则就覆盖
 				if (checkCandidate(beanName, candidate)) {
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
-					//加入到map当中
+					// 内部就已经把该 Bean 定义注册进去了，所以外部可以不用再重复注册了
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}
@@ -369,7 +368,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		if (originatingDef != null) {
 			existingDef = originatingDef;
 		}
-		// 确定新 BeanDefinition 是否兼容已经存在的BeanDefinition。
+		// 确定新 BeanDefinition 是否兼容已经存在的 BeanDefinition。
 		if (isCompatible(beanDefinition, existingDef)) {
 			return false;
 		}
@@ -391,9 +390,12 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * new definition to be skipped in favor of the existing definition
 	 */
 	protected boolean isCompatible(BeanDefinition newDefinition, BeanDefinition existingDefinition) {
-		return (!(existingDefinition instanceof ScannedGenericBeanDefinition) ||  // explicitly registered overriding bean
-				(newDefinition.getSource() != null && newDefinition.getSource().equals(existingDefinition.getSource())) ||  // scanned same file twice
-				newDefinition.equals(existingDefinition));  // scanned equivalent class twice
+		       // explicitly registered overriding bean
+		return (!(existingDefinition instanceof ScannedGenericBeanDefinition) ||
+				// scanned same file twice
+				(newDefinition.getSource() != null && newDefinition.getSource().equals(existingDefinition.getSource())) ||
+				// scanned equivalent class twice
+				newDefinition.equals(existingDefinition));
 	}
 
 
