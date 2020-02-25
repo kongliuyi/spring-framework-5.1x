@@ -53,6 +53,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	private BeanFactoryAdvisorRetrievalHelper advisorRetrievalHelper;
 
 
+	/**
+	 * 初始调用栈 1.设置 beanFactory
+	 * @param beanFactory bean 工厂
+	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
 		super.setBeanFactory(beanFactory);
@@ -63,6 +67,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		initBeanFactory((ConfigurableListableBeanFactory) beanFactory);
 	}
 
+	/**
+	 * 初始调用栈 3.初始化属性 advisorRetrievalHelper
+	 * @param beanFactory
+	 */
 	protected void initBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		this.advisorRetrievalHelper = new BeanFactoryAdvisorRetrievalHelperAdapter(beanFactory);
 	}
@@ -73,6 +81,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	protected Object[] getAdvicesAndAdvisorsForBean(
 			Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
 
+		// 寻找符合的 Advisor （包含 Advice 切面逻辑和 Pointcut 切点信息）
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
@@ -91,7 +100,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+		// 从 beanFactory 中获取声明为 Aspect 注解的类，对并这些类进行增强器的提取
+		// 委派给子类实现 AnnotationAwareAspectJAutoProxyCreator.findCandidateAdvisors
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+		// 寻找匹配的增强器，前一步查询出来全部的增强器，这一步进行匹配，找出属于该 bean 的
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
@@ -101,11 +113,13 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	}
 
 	/**
+	 * 初始调用栈 8.
 	 * Find all candidate Advisors to use in auto-proxying.
 	 * @return the List of candidate Advisors
 	 */
 	protected List<Advisor> findCandidateAdvisors() {
 		Assert.state(this.advisorRetrievalHelper != null, "No BeanFactoryAdvisorRetrievalHelper available");
+		// advisorRetrievalHelper = BeanFactoryAdvisorRetrievalHelperAdapter 来源初始调用栈 3
 		return this.advisorRetrievalHelper.findAdvisorBeans();
 	}
 

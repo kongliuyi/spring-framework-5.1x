@@ -46,14 +46,33 @@ import org.springframework.aop.SpringProxy;
 @SuppressWarnings("serial")
 public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 
+	/**
+	 * 遵守规则：
+	 * 1）如果目标对象实现了接口，默认情况下会采用 JDK 的动态代理实现AOP。
+	 * 2）如果目标对象实现了接口，可以强制使用 CGLIB 实现 AOP。
+	 * 3）如果目标对象没有实现了接口，必须采用 CGLIB 代理，Spring会自动在JDK动态代理和CGLIB之间转换。
+	 *         看完有如下方法后，该规则不完全正确。
+	 * @param config the AOP configuration in the form of an
+	 * AdvisedSupport object
+	 * @return
+	 * @throws AopConfigException
+	 */
 	@Override
 	public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
+		// 这段代码用来判断选择哪种创建代理对象的方式
+		// config.isOptimize()：是否对代理类的生成使用策略优化 其作用是和 isProxyTargetClass 是一样的 默认为false
+		// config.isProxyTargetClass()：是否使用 Cglib 的方式创建代理对象 默认为false
+		// hasNoUserSuppliedProxyInterfaces：目标类是没有实现接口或者只实现了一个接口并且这个接口类型是 SpringProxy 类型
 		if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
+			// 上面的三个方法有一个为 true 的话，则进入到这里
+			// 从 AdvisedSupport 中获取目标类类对象
 			Class<?> targetClass = config.getTargetClass();
 			if (targetClass == null) {
 				throw new AopConfigException("TargetSource cannot determine target class: " +
 						"Either an interface or a target is required for proxy creation.");
 			}
+			// 判断目标类是否是接口,如果目标类是接口的话则使用 JDK 的方式生成代理对象
+			// 或者如果目标类是 Proxy 类型 则还是使用 JDK 的方式生成代理对象
 			if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
 				return new JdkDynamicAopProxy(config);
 			}

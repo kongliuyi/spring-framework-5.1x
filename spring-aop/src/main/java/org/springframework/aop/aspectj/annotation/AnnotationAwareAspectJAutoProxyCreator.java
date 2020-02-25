@@ -75,6 +75,10 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 		this.aspectJAdvisorFactory = aspectJAdvisorFactory;
 	}
 
+	/**
+	 * 初始调用栈 2.初始化属性 aspectJAdvisorFactory、aspectJAdvisorsBuilder
+	 * @param beanFactory
+	 */
 	@Override
 	protected void initBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		super.initBeanFactory(beanFactory);
@@ -86,17 +90,27 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 	}
 
 
+	/**
+	 * 初始调用栈 7. 找出所有的被封装成 Advisor 增加方法
+	 * @return
+	 */
 	@Override
 	protected List<Advisor> findCandidateAdvisors() {
 		// Add all the Spring advisors found according to superclass rules.
 		List<Advisor> advisors = super.findCandidateAdvisors();
 		// Build Advisors for all AspectJ aspects in the bean factory.
+		// aspectJAdvisorsBuilder = BeanFactoryAspectJAdvisorsBuilderAdapter 来源初始调用栈 2.
 		if (this.aspectJAdvisorsBuilder != null) {
 			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
 		}
 		return advisors;
 	}
 
+	/**
+	 * 初始调用栈 5.
+	 * @param beanClass the class of the bean
+	 * @return
+	 */
 	@Override
 	protected boolean isInfrastructureClass(Class<?> beanClass) {
 		// Previously we setProxyTargetClass(true) in the constructor, but that has too
@@ -108,6 +122,8 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 		// defined on the interface. We could potentially relax the restriction about
 		// not advising aspects in the future.
 		return (super.isInfrastructureClass(beanClass) ||
+				// aspectJAdvisorFactory = ReflectiveAspectJAdvisorFactory 来源请看初始化调用栈 2.
+				// 作用：beanClass 是否被 @Aspect 注解修饰 && !(beanClass 中类属性名是否以 "ajc$" 开头)
 				(this.aspectJAdvisorFactory != null && this.aspectJAdvisorFactory.isAspect(beanClass)));
 	}
 

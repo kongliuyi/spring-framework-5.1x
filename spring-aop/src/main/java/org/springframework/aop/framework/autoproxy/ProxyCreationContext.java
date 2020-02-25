@@ -48,6 +48,7 @@ public final class ProxyCreationContext {
 	}
 
 	/**
+	 * 将当前代理的 bean 实例的名称 从 ThreadLocal 线程池中放入或取出 。
 	 * Set the name of the currently proxied bean instance.
 	 * @param beanName the name of the bean, or {@code null} to reset it
 	 */
