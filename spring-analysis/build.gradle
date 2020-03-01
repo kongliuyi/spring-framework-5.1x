@@ -18,6 +18,7 @@ dependencies {
     compile(project(":spring-expression"))
     compile(project(":spring-jcl"))
     compile("org.apache.tomcat.embed:tomcat-embed-core:8.5.33")
+    compile("org.apache.tomcat:tomcat-jasper:8.5.16")
     optional(project(":spring-instrument"))
     optional(project(":spring-context"))
     optional("org.aspectj:aspectjweaver:${aspectjVersion}")
@@ -25,4 +26,6 @@ dependencies {
     optional(project(":spring-web"))
     optional(project(":spring-webmvc"))
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
+
 }

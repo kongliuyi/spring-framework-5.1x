@@ -105,6 +105,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						if (beanType == null) {
 							continue;
 						}
+						// 根据类实例化可知 advisorFactory = ReflectiveAspectJAdvisorFactory
 						// 如果存在 @Aspect  注解并且满足类属性名不以 "ajc$" 开头
 						if (this.advisorFactory.isAspect(beanType)) {
 							aspectNames.add(beanName);
@@ -113,6 +114,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
 								// 解析标记 @Aspect 注解中的增强方法,并为每个 AspectJ 增强方法创建一个 Spring Advisor
+								// 并封装到 InstantiationModelAwarePointcutAdvisorImpl 中
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 								if (this.beanFactory.isSingleton(beanName)) {
 									this.advisorsCache.put(beanName, classAdvisors);

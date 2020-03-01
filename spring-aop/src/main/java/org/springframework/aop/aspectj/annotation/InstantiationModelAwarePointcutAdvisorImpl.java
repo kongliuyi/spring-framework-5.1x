@@ -95,7 +95,7 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 		this.aspectName = aspectName;
 
 		if (aspectInstanceFactory.getAspectMetadata().isLazilyInstantiated()) {
-			// Static part of the pointcut is a lazy type.
+			// Static part of the pointcut is a lazy type.切入点的静态部分是一个惰性类型。
 			Pointcut preInstantiationPointcut = Pointcuts.union(
 					aspectInstanceFactory.getAspectMetadata().getPerClausePointcut(), this.declaredPointcut);
 
@@ -110,6 +110,7 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 			// A singleton aspect.
 			this.pointcut = this.declaredPointcut;
 			this.lazy = false;
+			// 初始化增强器
 			this.instantiatedAdvice = instantiateAdvice(this.declaredPointcut);
 		}
 	}

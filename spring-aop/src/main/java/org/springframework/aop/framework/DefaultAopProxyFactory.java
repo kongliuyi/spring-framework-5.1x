@@ -60,8 +60,8 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 	@Override
 	public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
 		// 这段代码用来判断选择哪种创建代理对象的方式
-		// config.isOptimize()：是否对代理类的生成使用策略优化 其作用是和 isProxyTargetClass 是一样的 默认为false
-		// config.isProxyTargetClass()：是否使用 Cglib 的方式创建代理对象 默认为false
+		// config.isOptimize()：是否对代理类的生成使用策略优化 其作用是和 isProxyTargetClass 一样的默认为false
+		// config.isProxyTargetClass()：如果使用 Cglib 的方式创建代理对象,true 基于类创建代理,false 基于接口创建代理,默认为false
 		// hasNoUserSuppliedProxyInterfaces：目标类是没有实现接口或者只实现了一个接口并且这个接口类型是 SpringProxy 类型
 		if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
 			// 上面的三个方法有一个为 true 的话，则进入到这里

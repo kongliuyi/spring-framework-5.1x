@@ -1,9 +1,10 @@
 package net.riking.inject;
 
 
-import net.riking.inject.bean.CarBeanFactoryPostProcessor;
+
 import net.riking.inject.config.AppConfig;
 
+import net.riking.inject.processor.InitBeanFactoryPostProcessor;
 import net.riking.inject.service.InjectAutowiredByNameService;
 import net.riking.inject.service.InjectAutowiredService;
 
@@ -23,7 +24,7 @@ public class InjectTests {
 	public void  InjectAutowired(){
 		AnnotationConfigApplicationContext applicationContext=new AnnotationConfigApplicationContext();
 		applicationContext.register(AppConfig.class);
-		applicationContext.addBeanFactoryPostProcessor(new CarBeanFactoryPostProcessor());
+		applicationContext.addBeanFactoryPostProcessor(new InitBeanFactoryPostProcessor());
 		applicationContext.refresh();
 		InjectAutowiredService autowiredService = (InjectAutowiredService) applicationContext.getBean("injectAutowiredService");
 		autowiredService.query();
@@ -37,7 +38,7 @@ public class InjectTests {
 	public void  InjectByName(){
 		AnnotationConfigApplicationContext applicationContext=new AnnotationConfigApplicationContext();
 		applicationContext.register(AppConfig.class);
-		applicationContext.addBeanFactoryPostProcessor(new CarBeanFactoryPostProcessor());
+		applicationContext.addBeanFactoryPostProcessor(new InitBeanFactoryPostProcessor());
 		applicationContext.refresh();
 		InjectByNameService byNameService = (InjectByNameService) applicationContext.getBean("injectByNameService");
 		byNameService.query();
@@ -52,7 +53,7 @@ public class InjectTests {
 	public void  InjectByType(){
 		AnnotationConfigApplicationContext applicationContext=new AnnotationConfigApplicationContext();
 		applicationContext.register(AppConfig.class);
-		applicationContext.addBeanFactoryPostProcessor(new CarBeanFactoryPostProcessor());
+		applicationContext.addBeanFactoryPostProcessor(new InitBeanFactoryPostProcessor());
 		applicationContext.refresh();
 		InjectByTypeService byTypeService = (InjectByTypeService) applicationContext.getBean("injectByTypeService");
 		byTypeService.query();
@@ -64,7 +65,7 @@ public class InjectTests {
 	public void  InjectAutowiredByName(){
 		AnnotationConfigApplicationContext applicationContext=new AnnotationConfigApplicationContext();
 		applicationContext.register(AppConfig.class);
-		applicationContext.addBeanFactoryPostProcessor(new CarBeanFactoryPostProcessor());
+		applicationContext.addBeanFactoryPostProcessor(new InitBeanFactoryPostProcessor());
 		applicationContext.refresh();
 		InjectAutowiredByNameService injectAutowiredByNameService = (InjectAutowiredByNameService) applicationContext.getBean("injectAutowiredByNameService");
 		injectAutowiredByNameService.query();

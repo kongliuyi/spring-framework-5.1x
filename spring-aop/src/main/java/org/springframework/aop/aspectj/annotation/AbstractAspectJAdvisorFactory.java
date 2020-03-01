@@ -103,6 +103,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	@Override
 	public void validate(Class<?> aspectClass) throws AopConfigException {
 		// If the parent has the annotation and isn't abstract it's an error
+		// 如果父类被 @Aspect 注解修饰且父类又不是抽象的，那就是一个错误
 		if (aspectClass.getSuperclass().getAnnotation(Aspect.class) != null &&
 				!Modifier.isAbstract(aspectClass.getSuperclass().getModifiers())) {
 			throw new AopConfigException("[" + aspectClass.getName() + "] cannot extend concrete aspect [" +

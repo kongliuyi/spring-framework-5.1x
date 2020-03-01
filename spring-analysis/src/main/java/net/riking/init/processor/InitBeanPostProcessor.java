@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * @Date: 2020/2/23 14:13
  */
 @Component
-public class CarBeanPostProcessor implements BeanPostProcessor {
+public class InitBeanPostProcessor implements BeanPostProcessor {
 
 	/**
 	 * 源码：AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization

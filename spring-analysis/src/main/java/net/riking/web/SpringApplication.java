@@ -4,7 +4,11 @@ package net.riking.web;
 import net.riking.web.config.WebConfig;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.WebResourceRoot;
+import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.catalina.webresources.DirResourceSet;
+import org.apache.catalina.webresources.StandardRoot;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -16,13 +20,15 @@ import java.io.File;
  */
 public class SpringApplication {
 
+	private static final int port = 8078;
+
 	public static void  run  () throws LifecycleException {
 		AnnotationConfigWebApplicationContext acwc = new AnnotationConfigWebApplicationContext();
 		acwc.register(WebConfig.class);
 		acwc.refresh();
 		File baseDir =new File(System.getProperty("java.io.tmpdir"));
 		Tomcat tomcat = new Tomcat();
-		tomcat.setPort(8081);
+		tomcat.setPort(port);
 		Context context = tomcat.addContext("/", baseDir.getAbsolutePath());
 
 
@@ -34,17 +40,29 @@ public class SpringApplication {
 
 		tomcat.start();
 		tomcat.getServer().await();
+	}
 
 
 
-
-
+	public static void  run2  () throws LifecycleException {
+		Tomcat tomcat = new Tomcat();
+		tomcat.setPort(port);
+		String sourcePath = SpringApplication.class.getResource("/").getPath();
+		String docBase = sourcePath.substring(0,sourcePath.lastIndexOf("classes")) + "resources/";
+		Context context = tomcat.addWebapp("/", new File(docBase).getAbsolutePath());
+		//增加tomcat-jasper等包的获取路径
+		WebResourceRoot webResourceRoot = new StandardRoot(context);
+		webResourceRoot.addPreResources(new DirResourceSet(webResourceRoot,
+				"/WEB-INF/classes",sourcePath,"/"));
+		context.setResources(webResourceRoot);
+		tomcat.start();
+		tomcat.getServer().await();
 
 	}
 
 	public static void main(String[] args) {
 		try {
-			SpringApplication.run();
+			SpringApplication.run2();
 		} catch (LifecycleException e) {
 			e.printStackTrace();
 		}
