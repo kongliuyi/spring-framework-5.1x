@@ -495,8 +495,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		return resolvedBeanNames;
 	}
-	//根据类型去factory中获取对应类的名字
-	//比如在工厂初始化的时候可以根据BeanFactory去获取所有的BeanFactoryProcessor
+	// 根据类型去 factory 中获取对应类的名字
+	// 比如在工厂初始化的时候可以根据 BeanFactory 去获取所有的 BeanFactoryProcessor
 	private String[] doGetBeanNamesForType(ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit) {
 		List<String> result = new ArrayList<>();
 
@@ -1219,20 +1219,20 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							converter.convertIfNecessary(value, type, descriptor.getMethodParameter()));
 				}
 			}
-            //如果标识@Autowired注解的属性是数组或者集合类型，Array,Collection,Map,
+            // 如果标识@Autowired注解的属性是数组或者集合类型，Array,Collection,Map,
 			// 从这个方法获取@Autowired里的值
 			Object multipleBeans = resolveMultipleBeans(descriptor, beanName, autowiredBeanNames, typeConverter);
 			if (multipleBeans != null) {
 				return multipleBeans;
 			}
 			// 关键点 ！！！ 去 spring ioc 容器中找到需要注入的 type 类型的 bean
-			//如果标识@Autowired注解的属性是非集合类型， 从这个方法获取@Autowired里的值
+			// 如果标识@Autowired注解的属性是非集合类型， 从这个方法获取@Autowired里的值
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
-			//如果没有符合该类型的Bean
+			// 如果没有符合该类型的Bean
 			if (matchingBeans.isEmpty()) {
-				//是否是必须的
+				// 是否是必须的
 				if (isRequired(descriptor)) {
-					//抛出异常
+					// 抛出异常
 					raiseNoMatchingBeanFound(type, descriptor.getResolvableType(), descriptor);
 				}
 				return null;
@@ -1241,13 +1241,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			String autowiredBeanName;
 			Object instanceCandidate;
 
-            //如果符合该类型的Bean有多个
+            // 如果符合该类型的Bean有多个
 			if (matchingBeans.size() > 1) {
-				//挑选出最优解
+				// 挑选出最优解
 				autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
 				if (autowiredBeanName == null) {
 					if (isRequired(descriptor) || !indicatesMultipleBeans(type)) {
-						//抛出异常
+						// 抛出异常
 						return descriptor.resolveNotUnique(descriptor.getResolvableType(), matchingBeans);
 					}
 					else {
@@ -1308,7 +1308,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 			return stream;
 		}
-		//如果@Autowired标识的是数组类型的属性
+		// 如果@Autowired标识的是数组类型的属性
 		else if (type.isArray()) {
 			Class<?> componentType = type.getComponentType();
 			ResolvableType resolvableType = descriptor.getResolvableType();
@@ -1319,7 +1319,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (componentType == null) {
 				return null;
 			}
-			//通过类型去IOC容器内择取符合的Bean都是使用这个方法
+			// 通过类型去IOC容器内择取符合的Bean都是使用这个方法
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, componentType,
 					new MultiElementDescriptor(descriptor));
 			if (matchingBeans.isEmpty()) {
@@ -1438,7 +1438,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 */
 	protected Map<String, Object> findAutowireCandidates(
 			@Nullable String beanName, Class<?> requiredType, DependencyDescriptor descriptor) {
-        //从IOC容器中获取所有的符合requiredType类型的BeanName，存入候选数组
+        // 从IOC容器中获取所有的符合requiredType类型的BeanName，存入候选数组
 		String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 				this, requiredType, true, descriptor.isEager());
 		Map<String, Object> result = new LinkedHashMap<>(candidateNames.length);
@@ -1449,16 +1449,16 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (autowiringType.isAssignableFrom(requiredType)) {
 				Object autowiringValue = classObjectEntry.getValue();
 				autowiringValue = AutowireUtils.resolveAutowiringValue(autowiringValue, requiredType);
-				//如果注册的依赖Bean类型是指定类型的实例或是其父类，接口，则将其作为候选者，注册依赖的类型不会重复
+				// 如果注册的依赖Bean类型是指定类型的实例或是其父类，接口，则将其作为候选者，注册依赖的类型不会重复
 				if (requiredType.isInstance(autowiringValue)) {
 					result.put(ObjectUtils.identityToString(autowiringValue), autowiringValue);
 					break;
 				}
 			}
 		}
-		//遍历候选数组
+		// 遍历候选数组
 		for (String candidate : candidateNames) {
-			//候选Bean不是自引用（即要注入的类不能是类本身，会触发无限递归注入）
+			// 候选Bean不是自引用（即要注入的类不能是类本身，会触发无限递归注入）
 			if (!isSelfReference(beanName, candidate) && isAutowireCandidate(candidate, descriptor)) {
 				addCandidateEntry(result, candidate, descriptor, requiredType);
 			}
