@@ -40,6 +40,21 @@ public class UsersDao implements IUsersDao {
 		throw new RuntimeException("aa");
 	}
 
+
+	/**
+	 * @param users
+	 */
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void updateUserById(Users users) {
+		String sql = "update users set name = ?, age = ? where  id = ?";
+		jdbcTemplate.update(sql, new Object[]{users.getName(), users.getAge(), users.getId()});
+		System.out.println("Update record : " + users.toString());
+		// 事务测试，抛出异常，让上面的插入操作回滚
+		throw new RuntimeException("aa");
+	}
+
+
 	@Override
 	@Transactional
 	public void deleteById(Integer id) {

@@ -1,5 +1,6 @@
 package net.riking.transaction;
 
+import net.riking.aop.AspectjConfig;
 import net.riking.transaction.bean.Users;
 import net.riking.transaction.config.AppConfig;
 import net.riking.transaction.dao.IUsersDao;
@@ -18,7 +19,7 @@ public class TransactionTests {
 	@Test
 	public void transaction() {
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-		applicationContext.register(AppConfig.class);
+		applicationContext.register(AppConfig.class, AspectjConfig.class);
 		applicationContext.refresh();
 		IUsersDao usersDao = (IUsersDao) applicationContext.getBean("usersDao");
 

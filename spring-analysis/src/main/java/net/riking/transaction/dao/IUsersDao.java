@@ -17,6 +17,13 @@ public interface IUsersDao {
 	 */
 	void insertUser(Users users);
 
+
+	/**
+	 * 更新
+	 * @param users	用户信息
+	 */
+	 void updateUserById(Users users);
+
 	/**
 	 * 根据 id 进行删除
 	 * @param id	主键
