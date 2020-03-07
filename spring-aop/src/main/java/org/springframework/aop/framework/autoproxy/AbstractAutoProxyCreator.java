@@ -355,12 +355,15 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {
 			return bean;
 		}
-		// 不需增强, 根据初始调用栈 4. postProcessBeforeInstantiation
+		// 不需增强,提前跳过。 根据初始调用栈 4. postProcessBeforeInstantiation 调用过一次
 		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
 			return bean;
 		}
-		// 给定的 bean 类是否代表一个基础设施类，基础设置类不应代理 || 配置了指定 bean 不需要代理
-		// 根据初始调用栈 4. postProcessBeforeInstantiation 有类似调用
+		//,初始调用栈 4. postProcessBeforeInstantiation 调用过一次
+		// isInfrastructureClass：委派给子类去实现 AnnotationAwareAspectJAutoProxyCreator.isInfrastructureClass
+		//  给定的 bean 类是否是一个基础类（Advice、Pointcut、Advisor、AopInfrastructureBean），基础设置类不应代理   ||
+		// (beanClass 是否被 @Aspect 注解修饰 && !(beanClass 中类属性名是否以 "ajc$" 开头))
+		// shouldSkip：委派给子类去实现 AspectJAwareAdvisorAutoProxyCreator.shouldSkip
 		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
 			this.advisedBeans.put(cacheKey, Boolean.FALSE);
 			return bean;
@@ -368,8 +371,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 		// Create proxy if we have advice.
 		// 如果存在需要增强方法则创建代理，实际上委派给子类去实现 AbstractAdvisorAutoProxyCreator.getAdvicesAndAdvisorsForBean
-		// 怎么判断是否需要代理？这里给出了答案：如果有配置 Advisers 则需要被代理
-		// 这里开始去找 Advice，如果配置了，同时当前的 Bean 符合要求，就要动态代理
+		// 怎么判断是否需要代理？
+		// 首先这里开始去找 Advice，如果配置了，同时当前的 Bean 又符合要求，就要动态代理
 		// 这里说的符合要求，就是 advisor 配置的正则表达式是否匹配上
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {

@@ -100,8 +100,12 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
-		// 从 beanFactory 中获取声明为 Aspect 注解的类，对并这些类进行增强器的提取
-		// 委派给子类实现 AnnotationAwareAspectJAutoProxyCreator.findCandidateAdvisors
+		/*
+		 * 找到所有可以在自动代理中使用的候选顾问 Advisor。
+		 * 委派给子类重写 AnnotationAwareAspectJAutoProxyCreator.findCandidateAdvisors
+		 * 1.从 beanFactory 中获取 Advisor （事务就是这样实现的）
+		 * 2.从声明为 Aspect 注解类中构建（增强提取） Advisor
+		 */
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 		// 寻找匹配的增强器，前一步查询出来全部的增强器，这一步进行匹配，找出属于该 bean 的
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
