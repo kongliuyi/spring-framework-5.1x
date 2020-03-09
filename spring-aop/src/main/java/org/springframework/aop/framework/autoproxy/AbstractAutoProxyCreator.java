@@ -365,6 +365,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// (beanClass 是否被 @Aspect 注解修饰 && !(beanClass 中类属性名是否以 "ajc$" 开头))
 		// shouldSkip：委派给子类去实现 AspectJAwareAdvisorAutoProxyCreator.shouldSkip
 		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
+			// 不需增强
 			this.advisedBeans.put(cacheKey, Boolean.FALSE);
 			return bean;
 		}

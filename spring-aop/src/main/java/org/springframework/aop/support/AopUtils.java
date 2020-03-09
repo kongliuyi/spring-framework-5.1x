@@ -226,10 +226,13 @@ public abstract class AopUtils {
 			return false;
 		}
 
-		// 从切点对象中获取需要匹配的方法
+		// 从切点对象中获取需要匹配的方法,我这里事务为例：
+		// pc = TransactionAttributeSourcePointcut extends StaticMethodMatcherPointcut extends StaticMethodMatcher implements Pointcut
+		// pc.getMethodMatcher() 得到其本身
 		MethodMatcher methodMatcher = pc.getMethodMatcher();
 		if (methodMatcher == MethodMatcher.TRUE) {
 			// No need to iterate the methods if we're matching any method anyway...
+			// 如果我们要匹配任何方法，就不需要迭代方法……
 			return true;
 		}
 
@@ -289,7 +292,7 @@ public abstract class AopUtils {
 			return canApply(pca.getPointcut(), targetClass, hasIntroductions);
 		}
 		else {
-			// It doesn't have a pointcut so we assume it applies.
+			// It doesn't have a pointcut so we assume it applies.它没有切入点，所以我们假设它适用。
 			return true;
 		}
 	}
@@ -316,7 +319,7 @@ public abstract class AopUtils {
 		}
 		boolean hasIntroductions = !eligibleAdvisors.isEmpty();
 		for (Advisor candidate : candidateAdvisors) {
-			// 前面处理过了，跳过
+			// 前面处理过 IntroductionAdvisor 类型的了，跳过
 			if (candidate instanceof IntroductionAdvisor) {
 				// already processed
 				continue;

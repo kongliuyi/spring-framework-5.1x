@@ -446,10 +446,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	@Override
 	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
-		//获取指定类中autowire相关注解的元信息
+		// 获取指定类中 autowire 相关注解的元信息
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
-			//对Bean的属性进行自动注入
+			// 对 Bean 的属性进行自动注入
 			metadata.inject(bean, beanName, pvs);
 		}
 		catch (BeanCreationException ex) {

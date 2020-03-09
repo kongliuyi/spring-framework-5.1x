@@ -21,7 +21,8 @@ dependencies {
     compile(project(":spring-jcl"))
     compile("org.apache.tomcat.embed:tomcat-embed-core:8.5.33")
     compile("org.apache.tomcat:tomcat-jasper:8.5.16")
-    compile group: 'com.microsoft.sqlserver', name: 'sqljdbc4', version: '4.0'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
+    //compile group: 'com.microsoft.sqlserver', name: 'sqljdbc4', version: '4.0'
     optional(project(":spring-instrument"))
     optional(project(":spring-context"))
     optional("org.aspectj:aspectjweaver:${aspectjVersion}")

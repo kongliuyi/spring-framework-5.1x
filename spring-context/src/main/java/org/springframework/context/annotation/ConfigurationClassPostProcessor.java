@@ -343,7 +343,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
-			//这一步才是真正的解析-->
+			// 这一步才是真正的解析-->
 			// 通过配置类。Component、ComponentScan、Import、ImportResource 或者 @Configuration
 			parser.parse(candidates);
 			// 校验 配置类不能使final的，因为需要使用CGLIB生成代理对象，见 postProcessBeanFactory方法

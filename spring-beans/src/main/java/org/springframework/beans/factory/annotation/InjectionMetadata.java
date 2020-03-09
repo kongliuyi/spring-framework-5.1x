@@ -87,7 +87,7 @@ public class InjectionMetadata {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Processing injected element of bean '" + beanName + "': " + element);
 				}
-				//element==AutowiredMethodElement,
+				// element = AutowiredMethodElement,
 				element.inject(target, beanName, pvs);
 			}
 		}

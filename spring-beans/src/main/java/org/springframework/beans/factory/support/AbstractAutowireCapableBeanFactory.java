@@ -1514,9 +1514,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					/*
 					 * 初始化之前，spring 内部提供四个后置处理器
 					 * 1.ConfigurationClassPostProcessor&ImportAwareBeanPostProcessor：
-					 * 如果 bean 是 EnhancedConfiguration 类型，就注入了beanFactory
-					 * 2.AnnotationAwareAspectJAutoProxyCreator:返回PropertyValues，不做处理
-					 * 3.AutowiredAnnotationBeanPostProcessor：含有@Autowired属性注入处理
+					 * 如果 bean 是 EnhancedConfiguration 类型，就注入了 beanFactory
+					 * 2.AnnotationAwareAspectJAutoProxyCreator:返回 PropertyValues，不做处理
+					 * 3.AutowiredAnnotationBeanPostProcessor：含有 @Autowired 属性注入处理
 					 * 例子与详细注释在 InjectAutowiredService 类中
 					 * 4.CommonAnnotationBeanPostProcessor：含有@Resource属性注入处理
 					 *

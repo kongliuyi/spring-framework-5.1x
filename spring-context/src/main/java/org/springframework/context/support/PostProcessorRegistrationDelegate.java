@@ -69,7 +69,7 @@ final class PostProcessorRegistrationDelegate {
 
 			/*
 			 * beanFactoryPostProcessors 存放自定义的,
-			 * 目前测试我放的是 CarBeanFactoryPostProcessor
+			 * 目前测试我放的是 InitBeanFactoryPostProcessor
 			 */
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				/*
@@ -84,7 +84,7 @@ final class PostProcessorRegistrationDelegate {
 					registryProcessors.add(registryProcessor);
 				}
 				else {
-					// 目前测试我放的是 CarBeanFactoryPostProcessor
+					// 目前测试我放的是 InitBeanFactoryPostProcessor
 					regularPostProcessors.add(postProcessor);
 				}
 			}

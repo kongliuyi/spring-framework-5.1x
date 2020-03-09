@@ -1179,7 +1179,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
-				//根据字段类型从IOC容器中获取符合的Bean，如果有多个，则挑选出最优的那一个。
+				// 根据字段类型从 IOC 容器中获取符合的 Bean，如果有多个，则挑选出最优的那一个。
 				result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
 			}
 			return result;
@@ -1197,19 +1197,26 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (shortcut != null) {
 				return shortcut;
 			}
-            //获取字段属性的类型
+            // 获取字段属性的类型
 			Class<?> type = descriptor.getDependencyType();
-			//拿到@Value注解里的值
+			// 拿到 @Value 注解里的值
+			// QualifierAnnotationAutowireCandidateResolver#getSuggestedValue() 会处理 @Qualifier 和 @Value
 			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
 			if (value != null) {
 				if (value instanceof String) {
+					// 使用 StringValueResolver 处理${}占位符
+					// 所以我们常用的只使用 @Value("${xxx}") 这样来注入值或者你就是个字面量值，到这一步就已经完事了
+					// 若你是个 el 表达式或者文件资源 Resource 啥的，会继续交给下面的 beanExpressionResolver 处理，所以它是处理复杂类型的核心
 					String strVal = resolveEmbeddedValue((String) value);
 					BeanDefinition bd = (beanName != null && containsBean(beanName) ?
 							getMergedBeanDefinition(beanName) : null);
+					// 获取具体值，它是处理 @Value 表达式的核心方法
 					value = evaluateBeanDefinitionString(strVal, bd);
 				}
+				// 若我们没有定制，此处为 SimpleTypeConverter
 				TypeConverter converter = (typeConverter != null ? typeConverter : getTypeConverter());
 				try {
+					// 值已经拿到手了，经由转换器以转换
 					return converter.convertIfNecessary(value, type, descriptor.getTypeDescriptor());
 				}
 				catch (UnsupportedOperationException ex) {
@@ -1219,16 +1226,16 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							converter.convertIfNecessary(value, type, descriptor.getMethodParameter()));
 				}
 			}
-            // 如果标识@Autowired注解的属性是数组或者集合类型，Array,Collection,Map,
-			// 从这个方法获取@Autowired里的值
+            // 如果标识 @Autowired 注解的属性是数组或者集合类型，Array,Collection,Map,
+			// 从这个方法获取 @Autowired 里的值
 			Object multipleBeans = resolveMultipleBeans(descriptor, beanName, autowiredBeanNames, typeConverter);
 			if (multipleBeans != null) {
 				return multipleBeans;
 			}
-			// 关键点 ！！！ 去 spring ioc 容器中找到需要注入的 type 类型的 bean
-			// 如果标识@Autowired注解的属性是非集合类型， 从这个方法获取@Autowired里的值
+			// 关键点 ！ 去 spring ioc 容器中找到需要注入的 type 类型的 bean
+			// 如果标识 @Autowired 注解的属性是非集合类型，从这个方法获取 @Autowired 里的值
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
-			// 如果没有符合该类型的Bean
+			// 如果没有符合该类型的 Bean
 			if (matchingBeans.isEmpty()) {
 				// 是否是必须的
 				if (isRequired(descriptor)) {
@@ -1241,7 +1248,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			String autowiredBeanName;
 			Object instanceCandidate;
 
-            // 如果符合该类型的Bean有多个
+            // 如果符合该类型的 Bean 有多个
 			if (matchingBeans.size() > 1) {
 				// 挑选出最优解
 				autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
