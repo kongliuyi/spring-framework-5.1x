@@ -1445,18 +1445,18 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 */
 	protected Map<String, Object> findAutowireCandidates(
 			@Nullable String beanName, Class<?> requiredType, DependencyDescriptor descriptor) {
-        // 从IOC容器中获取所有的符合requiredType类型的BeanName，存入候选数组
+        // 从 IOC 容器中获取所有的符合 requiredType 类型的 BeanName，存入候选数组
 		String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 				this, requiredType, true, descriptor.isEager());
 		Map<String, Object> result = new LinkedHashMap<>(candidateNames.length);
-		//首先从容器自身注册的依赖解析来匹配，Spring容器自身注册了很多Bean的依赖，
-		//当使用者想要注入指定类型的Bean时，会优先从已注册的依赖内寻找匹配
+		// 首先从容器自身注册的依赖解析来匹配，Spring 容器自身注册了很多 Bean 的依赖，
+		// 当使用者想要注入指定类型的 Bean 时，会优先从已注册的依赖内寻找匹配
 		for (Map.Entry<Class<?>, Object> classObjectEntry : this.resolvableDependencies.entrySet()) {
 			Class<?> autowiringType = classObjectEntry.getKey();
 			if (autowiringType.isAssignableFrom(requiredType)) {
 				Object autowiringValue = classObjectEntry.getValue();
 				autowiringValue = AutowireUtils.resolveAutowiringValue(autowiringValue, requiredType);
-				// 如果注册的依赖Bean类型是指定类型的实例或是其父类，接口，则将其作为候选者，注册依赖的类型不会重复
+				// 如果注册的依赖 Bean 类型是指定类型的实例或是其父类，接口，则将其作为候选者，注册依赖的类型不会重复
 				if (requiredType.isInstance(autowiringValue)) {
 					result.put(ObjectUtils.identityToString(autowiringValue), autowiringValue);
 					break;
@@ -1465,7 +1465,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		// 遍历候选数组
 		for (String candidate : candidateNames) {
-			// 候选Bean不是自引用（即要注入的类不能是类本身，会触发无限递归注入）
+			// 候选 Bean 不是自引用（即要注入的类不能是类本身，会触发无限递归注入）
 			if (!isSelfReference(beanName, candidate) && isAutowireCandidate(candidate, descriptor)) {
 				addCandidateEntry(result, candidate, descriptor, requiredType);
 			}
