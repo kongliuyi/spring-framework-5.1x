@@ -897,13 +897,13 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			// 新建一个mavContainer，用于存放所有可能会用到的 ModelAndView
 			ModelAndViewContainer mavContainer = new ModelAndViewContainer();
 			/**
-			 * 检索request域中的attribute，并将其放置在mavContainer末尾
+			 * 检索request域中的 attribute，并将其放置在 mavContainer 末尾
 			 *
 			 * RequestContextUtils.getInputFlashMap(request)会调用HttpServletRequest.getAttribute(DispatcherServlet.class.getName() + ".INPUT_FLASH_MAP")方法。
-			 * 可以获取到request中的 attribute 属性。这个attribute就是我们属性的attribute，它可以通过两
+			 * 可以获取到 request 中的 attribute 属性。这个 attribute 就是我们属性的 attribute，它可以通过两
 			 * 种方式来设置：
-			 * ①servlet容器为request设置的；
-			 * ②通过ServletRequest.setAttribute方法来设置。
+			 * ①servlet 容器为 request 设置的；
+			 * ②通过 ServletRequest.setAttribute 方法来设置。
 			 *
 			 */
 			mavContainer.addAllAttributes(RequestContextUtils.getInputFlashMap(request));
