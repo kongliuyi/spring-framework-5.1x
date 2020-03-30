@@ -59,12 +59,13 @@ public class AnnotatedBeanDefinitionReader {
 
 	/**
 	 *
-	 *  这里的BeanDefinitionRegistry registry是通过在AnnotationConfigApplicationContext的构造方法中传进来的this
-	 *  由此说明AnnotationConfigApplicationContext是一个BeanDefinitionRegistry类型的类
-	 *  何以证明我们可以看到AnnotationConfigApplicationContext的类关系：
+	 *  这里的 BeanDefinitionRegistry registry 是通过在 AnnotationConfigApplicationContext 的构造方法中传进来的 this
+	 *  由此说明 AnnotationConfigApplicationContext 是一个 BeanDefinitionRegistry 类型的类
+	 *  AnnotationConfigApplicationContext的类关系：
 	 *  GenericApplicationContext extends AbstractApplicationContext implements BeanDefinitionRegistry
-	 *  看到他实现了BeanDefinitionRegistry证明上面的说法，那么BeanDefinitionRegistry的作用是什么呢？
-	 *  BeanDefinitionRegistry 顾名思义就是BeanDefinition的注册器,那么何为BeanDefinition呢？参考BeanDefinition的源码的注释
+	 *  看到他实现了 BeanDefinitionRegistry 证明上面的说法，那 么BeanDefinitionRegistry 的作用是什么呢？
+	 *  BeanDefinitionRegistry 顾名思义就是 BeanDefinition 的注册器,那么何为 BeanDefinition 呢？
+	 *  参考 BeanDefinition 的源码的注释,我认为就是 bean 工厂创建 bean 时候所需要的原料
 	 * Create a new {@code AnnotatedBeanDefinitionReader} for the given registry.
 	 * <p>If the registry is {@link EnvironmentCapable}, e.g. is an {@code ApplicationContext},
 	 * the {@link Environment} will be inherited, otherwise a new
@@ -222,10 +223,10 @@ public class AnnotatedBeanDefinitionReader {
 			@Nullable Class<? extends Annotation>[] qualifiers, BeanDefinitionCustomizer... definitionCustomizers) {
 
 		/**
-		 * 根据指定的bean创建一个AnnotatedGenericBeanDefinition
-		 * 这个AnnotatedGenericBeanDefinition可以理解为一个数据结构
-		 * AnnotatedGenericBeanDefinition包含了类的其他信息,比如一些元信息
-		 * scope，lazy等等
+		 * 根据指定的 bean 创建一个 AnnotatedGenericBeanDefinition
+		 * 这个 AnnotatedGenericBeanDefinition 可以理解为一个数据结构
+		 * AnnotatedGenericBeanDefinition 包含了类的其他信息,比如一些元信息
+		 * scope，lazy 等等
 		 */
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
 
@@ -233,7 +234,7 @@ public class AnnotatedBeanDefinitionReader {
 		 * 这个方法很重要 诠释了 @Conditional 这个注解的原理
 		 *
 		 * 判断这个类是否需要跳过解析
-		 * 通过代码可以知道spring判断是否跳过解析，
+		 * 通过代码可以知道 spring 判断是否跳过解析，
 		 */
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
@@ -249,23 +250,23 @@ public class AnnotatedBeanDefinitionReader {
 		 */
 		abd.setScope(scopeMetadata.getScopeName());
 		/**
-		 * 通过beanNameGenerator（beanName生成器） 生成beanName
+		 * 通过 beanNameGenerator（beanName生成器） 生成 beanName
 		 */
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 		/**
 		 * 处理类当中的通用注解
 		 * 主要处理 Lazy DependsOn Primary Role 等等注解
-		 * processCommonDefinitionAnnotations中处理完成之后把注解值添加到BeanDefinition数据结构当中
+		 * processCommonDefinitionAnnotations 中处理完成之后把注解值添加到 BeanDefinition 数据结构当中
 		 *
 		 */
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
 
 		/**
-		 * 如果在向容器注册注解Bean定义时，使用了额外的限定符注解则解析
+		 * 如果在向容器注册注解 BeanDefinition 时，使用了额外的限定符注解则解析
 		 * 这里需要注意的
-		 * byName和qualifiers这个变量是Annotation类型的数组，里面存不仅仅是Qualifier注解
-		 * 理论上里面里面存的是一切注解，所以可以看到下面的代码spring去循环了这个数组
-		 * 然后依次判断了注解当中是否包含了Primary，是否包含了Lazyd
+		 * byName 和 qualifiers 这个变量是 Annotation 类型的数组，里面存不仅仅是 Qualifier 注解
+		 * 理论上里面里面存的是一切注解，所以可以看到下面的代码 spring 去循环了这个数组
+		 * 然后依次判断了注解当中是否包含了Primary，是否包含了Lazy
 		 */
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
@@ -280,14 +281,14 @@ public class AnnotatedBeanDefinitionReader {
 				}
 			}
 		}
-		//目前没有发现这个作用：标记一下
+		// 目前没有发现这个作用：标记一下
 		for (BeanDefinitionCustomizer customizer : definitionCustomizers) {
 			customizer.customize(abd);
 		}
 
 		/**
-		 * 可以把BeanDefinitionHolder理解成一个数据结构,
-		 * 这种结构可以认为就是持有 BeanDefinition，同时持有的包括BeanDefinition的名称和别名
+		 * 可以把 BeanDefinitionHolder 理解成一个数据结构,
+		 * 这种结构可以认为就是持有 BeanDefinition，同时持有的包括 BeanDefinition 的名称和别名
 		 */
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
 
@@ -298,12 +299,12 @@ public class AnnotatedBeanDefinitionReader {
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 
 		/**
-		 * 把上述的这个数据结构注册给registry
-		 * registy就是AnnotatonConfigApplicationContext
-		 * AnnotatonConfigApplicationContext在初始化的時候通过调用父类的构造方法
-		 * 实例化了一个DefaultListableBeanFactory Bean工厂
-		 * registerBeanDefinition方法主要功能:把definitionHolder这个数据结构包含的信息
-		 * 注册到DefaultListableBeanFactory这个工厂中
+		 * 把上述的这个数据结构注册给 registry
+		 * registry 就是 AnnotationConfigApplicationContext
+		 * AnnotationConfigApplicationContext 在初始化的時候通过调用父类的构造方法
+		 * 实例化了一个 DefaultListableBeanFactory Bean 工厂
+		 * registerBeanDefinition 方法主要功能把 definitionHolder 这个数据结构包含的信息
+		 * 注册到 DefaultListableBeanFactory 这个工厂中
 		 */
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
 	}

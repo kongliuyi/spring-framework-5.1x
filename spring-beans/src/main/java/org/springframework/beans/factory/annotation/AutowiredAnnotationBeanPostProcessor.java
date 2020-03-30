@@ -229,11 +229,11 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	}
 
 
-	// 在每个bean实例化后，初始化前执行，获取并记录该bean属性注入的元数据，在随后的属性注入时使用
-	// 该方法由接口MergedBeanDefinitionPostProcessor定义
+	// 在每个bean实例化后，初始化前执行，获取并记录该 bean 属性注入的元数据，在随后的属性注入时使用
+	// 该方法由接口 MergedBeanDefinitionPostProcessor 定义
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-		// 获取指定bean的属性注入元数据
+		// 获取指定 bean 的属性注入元数据
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
 		metadata.checkConfigMembers(beanDefinition);
 	}

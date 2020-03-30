@@ -249,7 +249,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		if (!this.registriesPostProcessed.contains(factoryId)) {
 			// BeanDefinitionRegistryPostProcessor hook apparently not supported...
 			// Simply call processConfigurationClasses lazily at this point then.
-			//基于注册 @Configuration注解   构建和验证一个配置模型--也就是处理配置类
+			// 基于注册 @Configuration 注解   构建和验证一个配置模型--也就是处理配置类
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
 
@@ -263,7 +263,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * {@link Configuration} classes.
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
-		// 定义一个 list 存放 BeanDefinitionHolder  提供的B eanDefinition（项目当中提供了@Compent）
+		// 定义一个 list 存放 BeanDefinitionHolder  提供的 BeanDefinition（项目当中提供了@Compent）
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		// 获取容器中注册的所有 BeanDefinition 名字
 		String[] candidateNames = registry.getBeanDefinitionNames();
@@ -312,8 +312,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		/*
 		 * registry = DefaultListableBeanFactory
 		 * 如果 BeanDefinitionRegistry 是 SingletonBeanRegistry 子类的话,
-		 * 由于我们当前传入的是 DefaultListableBeanFactory,是SingletonBeanRegistry 的子类
-		 * 因此会将registry强转为SingletonBeanRegistry
+		 * 由于我们当前传入的是 DefaultListableBeanFactory,是 SingletonBeanRegistry 的子类
+		 * 因此会将 registry 强转为 SingletonBeanRegistry
 		 */
 		if (registry instanceof SingletonBeanRegistry) {
 			sbr = (SingletonBeanRegistry) registry;
