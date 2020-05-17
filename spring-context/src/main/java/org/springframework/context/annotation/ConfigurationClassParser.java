@@ -323,7 +323,7 @@ class ConfigurationClassParser {
 					if (bdCand == null) {
 						bdCand = holder.getBeanDefinition();
 					}
-					//将扫描出来的 BeanDefinition，进行检查是否有配置类（具体注解点进去看），然后执行类似 AppConfig 解析操作
+					// 将扫描出来的 BeanDefinition，进行检查是否有配置类（具体注解点进去看），然后执行类似 AppConfig 解析操作
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
 					}

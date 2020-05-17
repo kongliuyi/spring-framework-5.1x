@@ -4,8 +4,17 @@ import net.riking.web.interceptor.SpringMVCInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.List;
 
 /**
  * @Description
@@ -46,4 +55,21 @@ public class WebConfig implements WebMvcConfigurer {
 		registry.addResourceHandler("/template/**").addResourceLocations("/template/");
 
 	}
+
+	@Bean
+	public CommonsMultipartResolver multipartResolver() {
+		return new CommonsMultipartResolver();
+	}
+
+	@Override
+	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+		//super.configureMessageConverters(converters);
+
+		// 消息转换器处理,AbstractMessageConverterMethodProcessor.writeWithMessageConverters
+		MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
+		jsonConverter.setDefaultCharset(Charset.forName("UTF-8"));
+
+		converters.add(jsonConverter);
+	}
+
 }

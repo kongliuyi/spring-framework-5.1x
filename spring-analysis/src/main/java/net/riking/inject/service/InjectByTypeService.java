@@ -6,7 +6,7 @@ import net.riking.inject.dao.DogDao;
 import org.springframework.stereotype.Service;
 
 /**
- * 通过设置 byByType模型注入，依靠set方法中参数类型注入，例如：
+ * 通过设置 ByType模型注入，依靠set方法中参数类型注入，例如：
  * 1.  setsasaDog(DogDao dogDao)  中的 DogDao.class
  * 2.  setDogService212121s(IDogService dogService2) 注入IDogService.class
  * 如果IDogService.class 存在多个，则 选出最优的
