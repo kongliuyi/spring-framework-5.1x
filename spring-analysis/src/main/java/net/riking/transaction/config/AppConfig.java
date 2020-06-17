@@ -1,10 +1,9 @@
 package net.riking.transaction.config;
 
+import net.riking.transaction.bean.Users;
+import net.riking.transaction.dao.IUsersDao;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -12,6 +11,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 /**
  * @Description
@@ -60,5 +60,20 @@ public class AppConfig {
 		return transactionManager;
 	}
 
+	public static void main(String[] args) {
+		System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
+		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+		applicationContext.register(AppConfig.class/*, AspectjConfig.class*/);
+		applicationContext.refresh();
+		IUsersDao usersDao = (IUsersDao) applicationContext.getBean("usersDao");
+
+		Users users = new Users();
+		users.setName("武大郎");
+		users.setAge(21);
+		usersDao.insertUser(users);
+
+		List<Users> usersList = usersDao.selectAll();
+		usersList.forEach(System.out::println);
+	}
 
 }

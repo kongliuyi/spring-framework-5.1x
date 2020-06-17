@@ -46,7 +46,7 @@ public class Pig implements InitializingBean, DisposableBean {
 	/**
 	 * 源码：AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization
 	 * 实质：CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBeanPostProcessor
-	 *   InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization
+	 *   调用 InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization 方法
 	 */
 	@PostConstruct
 	void postConstruct() {

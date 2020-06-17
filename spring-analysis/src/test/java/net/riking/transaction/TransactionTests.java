@@ -19,7 +19,7 @@ public class TransactionTests {
 	@Test
 	public void transaction() {
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-		applicationContext.register(AppConfig.class, AspectjConfig.class);
+		applicationContext.register(AppConfig.class/*, AspectjConfig.class*/);
 		applicationContext.refresh();
 		IUsersDao usersDao = (IUsersDao) applicationContext.getBean("usersDao");
 

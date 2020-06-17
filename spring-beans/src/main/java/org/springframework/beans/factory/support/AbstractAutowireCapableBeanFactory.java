@@ -1200,7 +1200,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Class<?> beanClass = resolveBeanClass(mbd, beanName);
 
 
-		// 检测一个类的访问权限，spring 默认情况下是对于非 public 的类才是允许访问的
+		// 检测一个类的访问权限，spring 默认情况下是对于非 public 的类是不允许访问的
 		if (beanClass != null && !Modifier.isPublic(beanClass.getModifiers()) && !mbd.isNonPublicAccessAllowed()) {
 			throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 					"Bean class isn't public, and non-public access not allowed: " + beanClass.getName());
@@ -2011,11 +2011,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 2.初始化名称不能是 afterPropertiesSet
 			 * 3.不在扩展管理的初始化方法集合里面
 			 *
-			 * 案例在测试包中，测试类 InitBean.initAndDestroyMethod
+			 * 案例在测试包中，测试类 InitBeanTests.initAndDestroyMethod
 			 */
 			if (StringUtils.hasLength(initMethodName) &&
 					!(isInitializingBean && "afterPropertiesSet".equals(initMethodName)) &&
 					!mbd.isExternallyManagedInitMethod(initMethodName)) {
+				// 自定义初始化方法
 				invokeCustomInitMethod(beanName, bean, mbd);
 			}
 		}

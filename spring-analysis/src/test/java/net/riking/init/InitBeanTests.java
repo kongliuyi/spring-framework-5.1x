@@ -20,7 +20,7 @@ public class InitBeanTests {
 	 * 4.通过后置处理器调用 postProcessBeforeInitialization 和 postProcessAfterInitialization 初始化方法
 	 *
 	 * 注意：Spring 不会对一个 prototype bean的整个生命周期负责，
-	 * 容器在初始化、配置、装饰或者是装配完一个prototype实例后，
+	 * 容器在初始化、配置、装饰或者是装配完一个 prototype 实例后，
 	 * 将它交给客户端，随后就对该prototype实例不闻不问了。
 	 * 所以如果 bean 是 prototype 的话，spring 只能管初始化方法，而销毁方法是不会管的
 	 */

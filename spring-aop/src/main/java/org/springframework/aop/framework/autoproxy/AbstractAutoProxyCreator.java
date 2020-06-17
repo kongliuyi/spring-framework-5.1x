@@ -488,9 +488,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// 拷贝，获取当前类中的相关属性
 		proxyFactory.copyFrom(this);
 
-		// 决定对于给定 bean 是否应该使用类创建代理而不是他的接口代理
+		// 决定是否对于给定的 bean 应该使用类创建代理还是使用接口代理
 		if (!proxyFactory.isProxyTargetClass()) {
-			// 能进这里表明需要要接口代理,但还需进一步检查这个 bean 来确定是否应该使用其目标类而不是其接口进行代理。
+			// 能进这里表明需要要接口代理,但还需进一步检查这个 bean 来确定是否使用类创建代理还是使用接口代理。（当其没有实现接口）
 			if (shouldProxyTargetClass(beanClass, beanName)) {
 				proxyFactory.setProxyTargetClass(true);
 			}
