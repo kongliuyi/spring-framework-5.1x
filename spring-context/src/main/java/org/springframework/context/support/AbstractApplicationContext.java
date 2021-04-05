@@ -741,7 +741,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		 * getBeanFactoryPostProcessors() 这个地方才能获取到;
 		 * 为什么得不到? 因为 getBeanFactoryPostProcessors() 这个方法是直接获取一个 list，
 		 * 这个 list 是在 AnnotationConfigApplicationContext 被定义
-		 * 所谓的自定义的就是你手动调用 AnnotationConfigApplicationContext.addBeanFactoryPostProcesor();
+		 * 所谓的自定义的就是你手动调用 AnnotationConfigApplicationContext.addBeanFactoryPostProcessor();
 		 */
 		 PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
@@ -919,7 +919,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
-		//实例化所有剩余的(非懒加载初始化)单例
+		// 实例化所有剩余的(非懒加载初始化)单例
 		beanFactory.preInstantiateSingletons();
 	}
 

@@ -140,14 +140,14 @@ final class PostProcessorRegistrationDelegate {
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 
 			/*
-			 * 执行完成了所有非自定义 BeanDefinitionRegistryPostProcessor 后清除这个list
+			 * 执行完成了所有非自定义 BeanDefinitionRegistryPostProcessor 后清除这个 list
 			 * 这个 list 只是一个临时变量，故而要清除，以便再次应用
 			 */
 			currentRegistryProcessors.clear();
 
-			// 这里不懂，为什么再次调用，我认为就是处理这个过程中又添加了一个BeanDefinitionRegistryPostProcessor
+			// 这里不懂，为什么再次调用，我认为就是处理这个过程中又添加了一个 BeanDefinitionRegistryPostProcessor
 			// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.
-		    // 接下来，调用实现Ordered的BeanDefinitionRegistryPostProcessors。
+		    // 接下来，调用实现 Ordered 的BeanDefinitionRegistryPostProcessors。
 			postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
 				if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) {
@@ -182,7 +182,7 @@ final class PostProcessorRegistrationDelegate {
 
 			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
 			/**
-			 * 	执行BeanFactoryPostProcessor的回调，前面不是吗？
+			 * 	执行 BeanFactoryPostProcessor 的回调，前面不是吗？
 			 * 	前面执行的是 BeanFactoryPostProcessor 的子类 BeanDefinitionRegistryPostProcessor 的回调
 			 * 	这是执行的是所有 BeanDefinitionRegistryPostProcessor 父接口 BeanFactoryPostProcessor 中的 postProcessBeanFactory
 			 *

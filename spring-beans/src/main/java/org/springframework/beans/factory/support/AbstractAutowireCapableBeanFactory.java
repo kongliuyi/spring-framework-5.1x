@@ -519,10 +519,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.。
 			/*
-			 * 应用实例化前后处理程序，解决是否存在指定 bean 的实例化前快捷方式。
-			 * 如果存在实现 InstantiationAwareBeanPostProcessor 的后置处理器，
-			 * 且返回的结果不为空，则所有的 bean 有可能不能执行后面的功能代码，例如
-			 * 属性赋值（属性注入），其他后置处理器方法等等. 标记一下，以后写博客的时候写一个范例
+			 * 通过 InstantiationAwareBeanPostProcessor 后置处理器处理 bean 实例化前后处理程序，
+			 * 解决是否存在指定 bean 的实例化前快捷方式。
+			 * 我认为主要作用就是禁止  bean  不走默认的实例化,而是直接通过后置处理器生成,
+			 * 生成自己想要的对象或者进行一些缓存处理(返回 null).
+			 * 比如 AbstractAutoProxyCreator
+			 * 首先检查这个 bean 是否需要增强,如果不需要则直接返回 null 并把结果缓存起来.还有就是最重要的构建 Advisor 并缓存
+			 * 如果需要并且存在自定义方式生成的 bean 实例则为这 bean 生成代理对象,
+			 *
+			 * 一般情况下在此处不会生成代理对象,不论 jdk 代理还是 cglib 代理都不会在此处进行代理,
+			 * 因为 bean 还没有生成,所以在这里不会生成代理对象,
+			 * 无论是否存在自定义 bean,这里都会解析我们的 aop 切面信息进行缓存
+			 *
 			 */
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
@@ -620,7 +628,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
-			// 这里是一个匿名内部类，为了防止循环引用，尽早持有对象的引用
+			// 这里是一个匿名内部类，防止循环引用问题，将 bean 放入到三级缓存中,从而尽早持有对象的引用
+			// 上面讲过调用此方法放进一个 ObjectFactory，二级缓存会对应删除的
+			// getEarlyBeanReference 的作用：调用 SmartInstantiationAwareBeanPostProcessor.getEarlyBeanReference() 这个方法否则啥都不做
+			// 也就是给调用者个机会，自己去实现暴露这个 bean 的应用的逻辑~~~
+			// 比如在 getEarlyBeanReference() 里可以实现 AOP 的逻辑~~~  参考自动代理创建器 AbstractAutoProxyCreator  实现了这个方法来创建代理对象
+			// 若不需要执行 AOP 的逻辑，直接返回 Bean
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -641,22 +654,27 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						mbd.getResourceDescription(), beanName, "Initialization of bean failed", ex);
 			}
 		}
-
+        // 循环依赖校验（非常重要）
 		if (earlySingletonExposure) {
-			// 初始化 Bean 对象
+			// 循环依赖返回的是原对象,也可能是代理对象,
+			// 如果不是循环依赖返回的是 null
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
+				// 重点,如果不相等,可能导致循环依赖失效
 				// 根据名称获取的已注册的 Bean 和正在实例化的 Bean 比较是否是同一个
 				if (exposedObject == bean) {
 					exposedObject = earlySingletonReference;
 				}
 				// 当前 Bean 依赖其他 Bean，并且当发生循环引用时不允许新创建实例对象
+				// allowRawInjectionDespiteWrapping 标注是否允许此 Bean 的原始类型被注入到其它Bean里面，即使自己最终会被代理
+				// 默认是 false 表示不允许，如果改为 true 表示允许，就不会导致循环依赖失效。
+				// dependentBeanMap 记录着每个 Bean 它所依赖的 Bean 的Map~~~~
 				else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {
 					// 获取当前 Bean 所依赖的其他 Bean
 					String[] dependentBeans = getDependentBeans(beanName);
 					Set<String> actualDependentBeans = new LinkedHashSet<>(dependentBeans.length);
 					for (String dependentBean : dependentBeans) {
-						// 对依赖 Bean 进行类型检查
+						// 对依赖 Bean 进行类型检查,
 						if (!removeSingletonIfCreatedForTypeCheckOnly(dependentBean)) {
 							actualDependentBeans.add(dependentBean);
 						}
@@ -1147,6 +1165,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
+					// 插手 bean 的生成
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);

@@ -61,7 +61,6 @@ public class InterfaceProxy implements InvocationHandler {
 	 * 以下两种都可以用JDK代理
 	 * 1.目标类C 如果继承了父类B,父类B 实现了接口A 这种情况还是能通过jdk代理的 生成的代理类D 继承了 Proxy 类并且实现了接口A
 	 * 2.还有一种特殊情况,单纯目标类 A,生成的代理类B继承了Proxy,用Object接收生产成了三个代理方法 equals,toString 以及 hashCode
-	 * @param args
 	 */
 	public static void main(String[] args) {
 		// 设置系统属性，输出生成的 .class 文件

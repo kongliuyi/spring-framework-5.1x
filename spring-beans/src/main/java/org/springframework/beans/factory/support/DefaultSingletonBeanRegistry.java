@@ -71,19 +71,19 @@ import org.springframework.util.StringUtils;
 public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements SingletonBeanRegistry {
 
 	/**
-	 * 缓存单例 bean, key 为bean 名称,value为 bean 实例.
+	 * 一级缓存,完整单例 bean, key 为 beanName,value 为 bean 实例.
 	 * Cache of singleton objects: bean name to bean instance.
 	 */
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
 	/**
-	 * 缓存 beanFactory, key 为 bean 名称,value 为beanFactory.
+	 * 三级缓存, beanFactory, key 为 bean 名称,value 为 beanFactory.
 	 * Cache of singleton factories: bean name to ObjectFactory.
 	 **/
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
 	/**
-	 * 早期单例缓存, key 为 bean 名称,value 为 bean 实例
+	 * 二级缓存,早期单例缓存, key 为 bean 名称,value 为 bean 实例
 	 * Cache of early singleton objects: bean name to bean instance.
 	 */
 	private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
@@ -144,9 +144,13 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	protected void addSingleton(String beanName, Object singletonObject) {
 		synchronized (this.singletonObjects) {
+			// 加入到单例缓存池中,这个时候 bean 是完整的(经历过 实例化,属性注入以及初始化阶段的 bean)
 			this.singletonObjects.put(beanName, singletonObject);
+			// 从三级缓存中移除(主要针对的不是处理循环依赖的,而是处理代理)
 			this.singletonFactories.remove(beanName);
+			// 从二级缓存中移除(循环依赖的时候,早期对象存于二级缓存中,从三级缓存赋值过来的)
 			this.earlySingletonObjects.remove(beanName);
+			// 用来记录保存已经处理好的 bean
 			this.registeredSingletons.add(beanName);
 		}
 	}
@@ -163,8 +167,11 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		Assert.notNull(singletonFactory, "Singleton factory must not be null");
 		synchronized (this.singletonObjects) {
 			if (!this.singletonObjects.containsKey(beanName)) {
+				// 放入到三级缓存
 				this.singletonFactories.put(beanName, singletonFactory);
+				// 移除二级缓存
 				this.earlySingletonObjects.remove(beanName);
+				// 存放已注册的单例 bean 名称
 				this.registeredSingletons.add(beanName);
 			}
 		}
@@ -187,7 +194,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 		// 从 map 中获取 bean 如果不为空直接返回，不再进行初始化工作
-		// 这里一般普通类（通过扫描包）都是为空的
+		// 这里一般普通类（通过扫描包）都是为空的,(一级缓存,完整的 bean)
 		Object singletonObject = this.singletonObjects.get(beanName);
 		/*
 		 * isSingletonCurrentlyInCreation(beanName)，这一步的主要作用
@@ -199,12 +206,17 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		 */
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
+				// earlySingletonObjects 二级缓存,半成品 bean,对象实例化，但未进行属性填充
 				singletonObject = this.earlySingletonObjects.get(beanName);
+				// 二级缓存为 null, allowEarlyReference 允许早期引用这个 bean
 				if (singletonObject == null && allowEarlyReference) {
+					// singletonFactories 三级缓存,
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
 						singletonObject = singletonFactory.getObject();
+						// 将 bean 放入二级缓存
 						this.earlySingletonObjects.put(beanName, singletonObject);
+						// 将 singletonFactory 移除三级缓存
 						this.singletonFactories.remove(beanName);
 					}
 				}
@@ -247,6 +259,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					this.suppressedExceptions = new LinkedHashSet<>();
 				}
 				try {
+					// 这个过程其实是回调 createBean 方法
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}
@@ -270,16 +283,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (recordSuppressedExceptions) {
 						this.suppressedExceptions = null;
 					}
-					// 最后这里要 beanName 从 singletonsCurrentlyInCreation 移除，代表这个 bean 已经创建完了
+					// 最后这里要将 beanName 从 singletonsCurrentlyInCreation 集合中移除，代表这个 bean 已经创建完了
 					afterSingletonCreation(beanName);
 				}
+				// 获取 bean 正常执行没有异常的情况下,是 true
 				if (newSingleton) {
-					/*
-					 * 	this.singletonObjects.put(beanName, singletonObject);
-					 * 	this.singletonFactories.remove(beanName);
-					 * 	this.earlySingletonObjects.remove(beanName);
-					 * 	this.registeredSingletons.add(beanName);
-					 */
+					// 将完整的 bean 加入到一级缓存中,同时在二级和三级缓存中移除
 					addSingleton(beanName, singletonObject);
 				}
 			}

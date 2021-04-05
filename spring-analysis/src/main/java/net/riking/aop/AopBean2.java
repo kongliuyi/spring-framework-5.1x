@@ -11,10 +11,9 @@ import java.util.Stack;
  * @Date: 2020/2/23 16:35
  */
 @Component
-public class AopBean {
+public class AopBean2 {
 
-	@Autowired
-	AopBean2 aopBean2;
+	//@Autowired AopBean aopBean;
 
 	public void testAop() {
 		System.out.println("I am the true aop bean");
@@ -27,7 +26,7 @@ public class AopBean {
 	}
 
 	public static  boolean match(String str){
-		Stack<Character> stack = new Stack();
+		Stack<Character> stack = new Stack<>();
 		for (int i = 0; i < str.length(); i++) {
 			char item=str.charAt(i);
 			if(item=='('||item=='['||item=='{') {
