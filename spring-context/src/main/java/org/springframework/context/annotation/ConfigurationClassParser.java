@@ -170,7 +170,7 @@ class ConfigurationClassParser {
 			try {
 				// 解析注解对象，并且把解析出来的 bd 放到map，但是这里的 bd 指的是普通的
 				// 何谓不普通的呢？比如 @Bean 和各种 beanFactoryPostProcessor 得到的bean不在这里 put
-				// 但是是这里解析，只是不put而已
+				// 但是是这里解析，只是不 put 而已
 				if (bd instanceof AnnotatedBeanDefinition) {
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
@@ -289,7 +289,8 @@ class ConfigurationClassParser {
 			processMemberClasses(configClass, sourceClass);
 		}
 
-		// Process any @PropertySource annotations  执行 所有的 @PropertySource 注解，这里结合用法源码不难读
+		// Process any @PropertySource annotations
+		// 执行所有的 @PropertySource 注解，这里结合用法源码不难读
 		for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), PropertySources.class,
 				org.springframework.context.annotation.PropertySource.class)) {
@@ -322,7 +323,7 @@ class ConfigurationClassParser {
 					if (bdCand == null) {
 						bdCand = holder.getBeanDefinition();
 					}
-					//将扫描出来的 BeanDefinition，进行检查是否有配置类（具体注解点进去看），然后执行类似 AppConfig 解析操作
+					// 将扫描出来的 BeanDefinition，进行检查是否有配置类（具体注解点进去看），然后执行类似 AppConfig 解析操作
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
 					}

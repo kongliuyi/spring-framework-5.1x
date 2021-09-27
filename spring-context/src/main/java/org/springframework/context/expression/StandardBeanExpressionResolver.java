@@ -66,6 +66,11 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 
 	private final Map<BeanExpressionContext, StandardEvaluationContext> evaluationCache = new ConcurrentHashMap<>(8);
 
+	/**
+	 * 匿名内部类   解析上下文。和 TemplateParserContext 的实现一样。个人觉得直接使用它更优雅
+	 * 和 ParserContext.TEMPLATE_EXPRESSION 这个常量也一毛一样
+	 *
+	 */
 	private final ParserContext beanExpressionParserContext = new ParserContext() {
 		@Override
 		public boolean isTemplate() {
@@ -83,6 +88,7 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 
 
 	/**
+	 * 构造函数：默认就是使用的 SpelExpressionParser  下面你也可以自己set你自己的实现~
 	 * Create a new {@code StandardBeanExpressionResolver} with default settings.
 	 */
 	public StandardBeanExpressionResolver() {
@@ -139,22 +145,41 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 		try {
 			Expression expr = this.expressionCache.get(value);
 			if (expr == null) {
+				// 解析这个表达式
 				expr = this.expressionParser.parseExpression(value, this.beanExpressionParserContext);
+				// 缓存起来，以便于遇到相同的就不需要再次解析了
 				this.expressionCache.put(value, expr);
 			}
+			//
 			StandardEvaluationContext sec = this.evaluationCache.get(evalContext);
 			if (sec == null) {
+				//
 				sec = new StandardEvaluationContext(evalContext);
+				/*
+				 * 此处新增了4个，加上一个默认的   所以一共就有5个属性访问器了
+				 * 这样我们的SpEL就能访问 BeanFactory、Map、Environment 等组件了
+				 * BeanExpressionContextAccessor 表示调用 bean 的方法
+				 *
+				 * 注意：这些属性访问器是有先后顺序的，具体看下面
+				 */
 				sec.addPropertyAccessor(new BeanExpressionContextAccessor());
 				sec.addPropertyAccessor(new BeanFactoryAccessor());
 				sec.addPropertyAccessor(new MapAccessor());
 				sec.addPropertyAccessor(new EnvironmentAccessor());
+
+				// setBeanResolver 不是接口方法，仅仅辅助 StandardEvaluationContext 去获取 Bean
 				sec.setBeanResolver(new BeanFactoryResolver(evalContext.getBeanFactory()));
 				sec.setTypeLocator(new StandardTypeLocator(evalContext.getBeanFactory().getBeanClassLoader()));
+				// 若 conversionService 不为 null，就使用工厂的。
+				// 否则就使用 SpEL 里默认的 DefaultConverterService 那个
 				ConversionService conversionService = evalContext.getBeanFactory().getConversionService();
 				if (conversionService != null) {
+					// 最后包装成 TypeConverter 给 set 进去
 					sec.setTypeConverter(new StandardTypeConverter(conversionService));
 				}
+				// 这个很有意思，是一个 protected 的空方法，因此我们发现若我们自己要自定义 BeanExpressionResolver，
+				// 完全可以继承自 StandardBeanExpressionResolver
+				// 因为我们绝大多数情况下，只需要提供更多的计算环境即可
 				customizeEvaluationContext(sec);
 				this.evaluationCache.put(evalContext, sec);
 			}
@@ -166,6 +191,7 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 	}
 
 	/**
+	 * Spring 留给我们扩展的 SPI
 	 * Template method for customizing the expression evaluation context.
 	 * <p>The default implementation is empty.
 	 */

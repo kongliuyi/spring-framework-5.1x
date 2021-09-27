@@ -82,17 +82,24 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 	 * @see #isEligibleBean
 	 */
 	public List<Advisor> buildAspectJAdvisors() {
+		// 将切面 beanName 缓存起来,如  @Aspect 修饰 AspectJTest
 		List<String> aspectNames = this.aspectBeanNames;
-
+        // 只有一次机会
 		if (aspectNames == null) {
 			synchronized (this) {
 				aspectNames = this.aspectBeanNames;
 				if (aspectNames == null) {
 					List<Advisor> advisors = new ArrayList<>();
 					aspectNames = new ArrayList<>();
-					// 获取容器中所有 beanName
+					// 获取容器中所有 beanName,注意这里 beanName 并只有生成好 bean 后的 beanName,而是所有
+					// aop 功能,在这里传入的是 Object.class 对象,代表去容器中获取到所有的组件名称,
+					// 然后再进行遍历,
+					// 这个过程是十分的消耗性能的,所以说 spring 会再这里加入了保存切面信息的缓存。
+					// 但是事务功能不一样,事务模块的功能是直接去容器中获取 Advisor 类型的,选择范围小,切不消耗性能。
+					// 所以 spring 在事务模块中没有加入缓存来保存我们的事务相关的 advisor
 					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 							this.beanFactory, Object.class, true, false);
+                    // 遍历  IOC 容器中 bean 的名称
 					for (String beanName : beanNames) {
 						// 不是合格的 bean, 委派给子类去实现 AnnotationAwareAspectJAutoProxyCreator.isEligibleBean
 						if (!isEligibleBean(beanName)) {
@@ -100,14 +107,15 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						}
 						// We must be careful not to instantiate beans eagerly as in this case they
 						// would be cached by the Spring container but would not have been weaved.
-						// 获取 bean 的类型
+						// 通过 beanName 去容器中获取到对应 class 对象
 						Class<?> beanType = this.beanFactory.getType(beanName);
 						if (beanType == null) {
 							continue;
 						}
 						// 根据类实例化可知 advisorFactory = ReflectiveAspectJAdvisorFactory
-						// 如果存在 @Aspect  注解并且满足类属性名不以 "ajc$" 开头
+						// 根据 class 对象判断是不是切面 即存在 @Aspect  注解并且满足类属性名不以 "ajc$" 开头
 						if (this.advisorFactory.isAspect(beanType)) {
+							// 是切面加入到缓存中
 							aspectNames.add(beanName);
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {

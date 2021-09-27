@@ -1,5 +1,6 @@
 package net.riking.aop;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Stack;
@@ -11,6 +12,9 @@ import java.util.Stack;
  */
 @Component
 public class AopBean {
+
+	@Autowired
+	AopBean2 aopBean2;
 
 	public void testAop() {
 		System.out.println("I am the true aop bean");

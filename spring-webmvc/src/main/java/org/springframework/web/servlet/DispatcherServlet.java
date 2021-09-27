@@ -1056,7 +1056,7 @@ public class DispatcherServlet extends FrameworkServlet {
 					}
 				}
 
-				// 拦截器的 preHandler 方法的调用
+				// 调用拦截器 preHandler 方法
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}
@@ -1071,7 +1071,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 				// 视图名称转换（有可能需要加上前后缀）
 				applyDefaultViewName(processedRequest, mv);
-				// 应用所有拦截器的 postHandle 方法
+				// 调用拦截器的 postHandle 方法
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
 			}
 			catch (Exception ex) {
@@ -1088,6 +1088,8 @@ public class DispatcherServlet extends FrameworkServlet {
 			 * 2. 如果有 mv，进行视图渲染和跳转
 			 *
 			 * 【ViewResolver（视图解析器）入口点】
+			 *
+			 *  触发拦截器的 AfterCompletion 入口
 			 */
 			processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
 		}

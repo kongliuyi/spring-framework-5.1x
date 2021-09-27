@@ -1179,7 +1179,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
-				//根据字段类型从IOC容器中获取符合的Bean，如果有多个，则挑选出最优的那一个。
+				// 根据字段类型从 IOC 容器中获取符合的 Bean，如果有多个，则挑选出最优的那一个。
 				result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
 			}
 			return result;
@@ -1197,19 +1197,26 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (shortcut != null) {
 				return shortcut;
 			}
-            //获取字段属性的类型
+            // 获取字段属性的类型
 			Class<?> type = descriptor.getDependencyType();
-			//拿到@Value注解里的值
+			// 拿到 @Value 注解里的值
+			// QualifierAnnotationAutowireCandidateResolver#getSuggestedValue() 会处理 @Qualifier 和 @Value
 			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
 			if (value != null) {
 				if (value instanceof String) {
+					// 使用 StringValueResolver 处理${}占位符
+					// 所以我们常用的只使用 @Value("${xxx}") 这样来注入值或者你就是个字面量值，到这一步就已经完事了
+					// 若你是个 el 表达式或者文件资源 Resource 啥的，会继续交给下面的 beanExpressionResolver 处理，所以它是处理复杂类型的核心
 					String strVal = resolveEmbeddedValue((String) value);
 					BeanDefinition bd = (beanName != null && containsBean(beanName) ?
 							getMergedBeanDefinition(beanName) : null);
+					// 获取具体值，它是处理 @Value 表达式的核心方法
 					value = evaluateBeanDefinitionString(strVal, bd);
 				}
+				// 若我们没有定制，此处为 SimpleTypeConverter
 				TypeConverter converter = (typeConverter != null ? typeConverter : getTypeConverter());
 				try {
+					// 值已经拿到手了，经由转换器以转换
 					return converter.convertIfNecessary(value, type, descriptor.getTypeDescriptor());
 				}
 				catch (UnsupportedOperationException ex) {
@@ -1219,16 +1226,16 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							converter.convertIfNecessary(value, type, descriptor.getMethodParameter()));
 				}
 			}
-            // 如果标识@Autowired注解的属性是数组或者集合类型，Array,Collection,Map,
-			// 从这个方法获取@Autowired里的值
+            // 如果标识 @Autowired 注解的属性是数组或者集合类型，Array,Collection,Map,
+			// 从这个方法获取 @Autowired 里的值
 			Object multipleBeans = resolveMultipleBeans(descriptor, beanName, autowiredBeanNames, typeConverter);
 			if (multipleBeans != null) {
 				return multipleBeans;
 			}
-			// 关键点 ！！！ 去 spring ioc 容器中找到需要注入的 type 类型的 bean
-			// 如果标识@Autowired注解的属性是非集合类型， 从这个方法获取@Autowired里的值
+			// 关键点 ！ 去 spring ioc 容器中找到需要注入的 type 类型的 bean
+			// 如果标识 @Autowired 注解的属性是非集合类型，从这个方法获取 @Autowired 里的值
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
-			// 如果没有符合该类型的Bean
+			// 如果没有符合该类型的 Bean
 			if (matchingBeans.isEmpty()) {
 				// 是否是必须的
 				if (isRequired(descriptor)) {
@@ -1241,7 +1248,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			String autowiredBeanName;
 			Object instanceCandidate;
 
-            // 如果符合该类型的Bean有多个
+            // 如果符合该类型的 Bean 有多个
 			if (matchingBeans.size() > 1) {
 				// 挑选出最优解
 				autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
@@ -1438,18 +1445,18 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 */
 	protected Map<String, Object> findAutowireCandidates(
 			@Nullable String beanName, Class<?> requiredType, DependencyDescriptor descriptor) {
-        // 从IOC容器中获取所有的符合requiredType类型的BeanName，存入候选数组
+        // 从 IOC 容器中获取所有的符合 requiredType 类型的 BeanName，存入候选数组
 		String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 				this, requiredType, true, descriptor.isEager());
 		Map<String, Object> result = new LinkedHashMap<>(candidateNames.length);
-		//首先从容器自身注册的依赖解析来匹配，Spring容器自身注册了很多Bean的依赖，
-		//当使用者想要注入指定类型的Bean时，会优先从已注册的依赖内寻找匹配
+		// 首先从容器自身注册的依赖解析来匹配，Spring 容器自身注册了很多 Bean 的依赖，
+		// 当使用者想要注入指定类型的 Bean 时，会优先从已注册的依赖内寻找匹配
 		for (Map.Entry<Class<?>, Object> classObjectEntry : this.resolvableDependencies.entrySet()) {
 			Class<?> autowiringType = classObjectEntry.getKey();
 			if (autowiringType.isAssignableFrom(requiredType)) {
 				Object autowiringValue = classObjectEntry.getValue();
 				autowiringValue = AutowireUtils.resolveAutowiringValue(autowiringValue, requiredType);
-				// 如果注册的依赖Bean类型是指定类型的实例或是其父类，接口，则将其作为候选者，注册依赖的类型不会重复
+				// 如果注册的依赖 Bean 类型是指定类型的实例或是其父类，接口，则将其作为候选者，注册依赖的类型不会重复
 				if (requiredType.isInstance(autowiringValue)) {
 					result.put(ObjectUtils.identityToString(autowiringValue), autowiringValue);
 					break;
@@ -1458,7 +1465,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		// 遍历候选数组
 		for (String candidate : candidateNames) {
-			// 候选Bean不是自引用（即要注入的类不能是类本身，会触发无限递归注入）
+			// 候选 Bean 不是自引用（即要注入的类不能是类本身，会触发无限递归注入）
 			if (!isSelfReference(beanName, candidate) && isAutowireCandidate(candidate, descriptor)) {
 				addCandidateEntry(result, candidate, descriptor, requiredType);
 			}

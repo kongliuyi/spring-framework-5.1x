@@ -138,12 +138,13 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 */
 	protected List<Advisor> findAdvisorsThatCanApply(
 			List<Advisor> candidateAdvisors, Class<?> beanClass, String beanName) {
-
+		// 将当前代理的 bean 实例的名称 从 ThreadLocal 线程池中放入 。
 		ProxyCreationContext.setCurrentProxiedBeanName(beanName);
 		try {
 			return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
 		}
 		finally {
+			// 将当前代理的 bean 实例的名称 从 ThreadLocal 线程池中取出 。
 			ProxyCreationContext.setCurrentProxiedBeanName(null);
 		}
 	}

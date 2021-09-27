@@ -40,8 +40,11 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 	@Bean(name = TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor() {
+		// 创建 BeanFactoryTransactionAttributeSourceAdvisor, 其实质是实现了 PointcutAdvisor extends Advisor
 		BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
+		// 设置 transactionAttributeSource
 		advisor.setTransactionAttributeSource(transactionAttributeSource());
+		// 设置事务拦截器
 		advisor.setAdvice(transactionInterceptor());
 		if (this.enableTx != null) {
 			advisor.setOrder(this.enableTx.<Integer>getNumber("order"));
@@ -52,15 +55,21 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public TransactionAttributeSource transactionAttributeSource() {
+		// 事务解析器,通过 TransactionAttributeSourcePointcut.getTransactionAttributeSource 获取,所以其功能本质是 Pointcut.
+		// 其属性 annotationParsers 解析 @Transactional 注解信息并作为符合连接点条件
+		// 也可以说作为连接点集切入点 Pointcut 的条件
 		return new AnnotationTransactionAttributeSource();
 	}
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public TransactionInterceptor transactionInterceptor() {
+		// 创建事务拦截器,其作用本质是 Advice,其实质是实现了 Interceptor extends Advice
 		TransactionInterceptor interceptor = new TransactionInterceptor();
+		// 设置 transactionAttributeSource
 		interceptor.setTransactionAttributeSource(transactionAttributeSource());
 		if (this.txManager != null) {
+			// 设置事务管理器
 			interceptor.setTransactionManager(this.txManager);
 		}
 		return interceptor;

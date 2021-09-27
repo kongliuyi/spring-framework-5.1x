@@ -307,7 +307,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			// Check if bean definition exists in this factory.
-			//检查当前 BeanFactory 的父类 parentBeanFactory 是不是不为空，我没有改造过 BeanFactory 所以这里是空
+			// 检查当前 BeanFactory 的父类 parentBeanFactory 是不是不为空，我没有改造过 BeanFactory 所以这里是空
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
@@ -1539,6 +1539,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				scope = getRegisteredScope(scopeName);
 			}
 		}
+		// StandardBeanExpressionResolver#evaluate
 		return this.beanExpressionResolver.evaluate(value, new BeanExpressionContext(this, scope));
 	}
 

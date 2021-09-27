@@ -84,7 +84,9 @@ public class AspectMetadata implements Serializable {
 		Class<?> currClass = aspectClass;
 		AjType<?> ajType = null;
 		while (currClass != Object.class) {
+			// 将 currClass 封装成 AjTypeImpl 对象并缓存起来
 			AjType<?> ajTypeToCheck = AjTypeSystem.getAjType(currClass);
+			// 检查 class 是否是切面 即 类是否被 Aspect 注解修饰
 			if (ajTypeToCheck.isAspect()) {
 				ajType = ajTypeToCheck;
 				break;
@@ -99,8 +101,9 @@ public class AspectMetadata implements Serializable {
 		}
 		this.aspectClass = ajType.getJavaClass();
 		this.ajType = ajType;
-
+       // 虽然不懂,但是看起来很重要的样子
 		switch (this.ajType.getPerClause().getKind()) {
+			// 如果没有什么特殊处理就走这里
 			case SINGLETON:
 				this.perClausePointcut = Pointcut.TRUE;
 				return;

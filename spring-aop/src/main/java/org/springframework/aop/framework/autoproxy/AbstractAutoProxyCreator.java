@@ -261,7 +261,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			// isInfrastructureClass：委派给子类去实现 AnnotationAwareAspectJAutoProxyCreator.isInfrastructureClass
 			// beanClass 是否实现 Advice、Pointcut、Advisor、AopInfrastructureBean ||
 			// (beanClass 是否被 @Aspect 注解修饰 && !(beanClass 中类属性名是否以 "ajc$" 开头))
-			// shouldSkip：委派给子类去实现 AspectJAwareAdvisorAutoProxyCreator.shouldSkip
+			// shouldSkip：很重要,  构建 Advisor 并缓存起来, 委派给子类去实现 AspectJAwareAdvisorAutoProxyCreator.shouldSkip
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
@@ -365,6 +365,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// (beanClass 是否被 @Aspect 注解修饰 && !(beanClass 中类属性名是否以 "ajc$" 开头))
 		// shouldSkip：委派给子类去实现 AspectJAwareAdvisorAutoProxyCreator.shouldSkip
 		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
+			// 不需增强
 			this.advisedBeans.put(cacheKey, Boolean.FALSE);
 			return bean;
 		}
@@ -487,9 +488,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// 拷贝，获取当前类中的相关属性
 		proxyFactory.copyFrom(this);
 
-		// 决定对于给定 bean 是否应该使用类创建代理而不是他的接口代理
+		// 决定是否对于给定的 bean 应该使用类创建代理还是使用接口代理
 		if (!proxyFactory.isProxyTargetClass()) {
-			// 能进这里表明需要要接口代理,但还需进一步检查这个 bean 来确定是否应该使用其目标类而不是其接口进行代理。
+			// 能进这里表明需要要接口代理,但还需进一步检查这个 bean 来确定是否使用类创建代理还是使用接口代理。（当其没有实现接口）
 			if (shouldProxyTargetClass(beanClass, beanName)) {
 				proxyFactory.setProxyTargetClass(true);
 			}

@@ -49,7 +49,10 @@ public class ImportTests {
 		AnnotationConfigApplicationContext applicationContext=new AnnotationConfigApplicationContext();
 		applicationContext.register(ImportRegistrarConfig.class);
 		applicationContext.refresh();
+		Object bean = applicationContext.getBean("&userRepo");
+		System.out.println(bean.getClass());
 		UserRepo userRepo= (UserRepo) applicationContext.getBean("userRepo");
+		System.out.println(userRepo.getClass());
 		userRepo.findUserList();
 		applicationContext.close();
 	}

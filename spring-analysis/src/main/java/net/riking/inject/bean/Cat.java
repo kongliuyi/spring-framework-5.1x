@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import java.beans.ConstructorProperties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 /**
  * @Description
  * @Author: kongLiuYi
@@ -87,10 +89,10 @@ public class Cat {
 			}
 		});
 		executorService.submit(() -> {
-			for (int i = 1; i <100 ; i++) {
-				System.out.println("t3："+i);
+			for (int i = 1; i < 100; i++) {
+				System.out.println("t3：" + i);
 			}
 		});
-		executorService.shutdown();;
+		executorService.shutdown();
 	}
 }
