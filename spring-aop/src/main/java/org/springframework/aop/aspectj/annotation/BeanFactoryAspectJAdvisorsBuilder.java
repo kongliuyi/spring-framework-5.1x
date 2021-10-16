@@ -91,7 +91,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 				if (aspectNames == null) {
 					List<Advisor> advisors = new ArrayList<>();
 					aspectNames = new ArrayList<>();
-					// 获取容器中所有 beanName,注意这里 beanName 并只有生成好 bean 后的 beanName,而是所有
+					// 获取容器中所有 beanName,注意这里 beanName 并不只有生成好 bean 后的 beanName,而是所有
 					// aop 功能,在这里传入的是 Object.class 对象,代表去容器中获取到所有的组件名称,
 					// 然后再进行遍历,
 					// 这个过程是十分的消耗性能的,所以说 spring 会再这里加入了保存切面信息的缓存。

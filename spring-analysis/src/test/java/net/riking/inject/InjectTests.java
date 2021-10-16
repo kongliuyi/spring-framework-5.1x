@@ -24,7 +24,7 @@ public class InjectTests {
 	public void  InjectAutowired(){
 		AnnotationConfigApplicationContext applicationContext=new AnnotationConfigApplicationContext();
 		applicationContext.register(AppConfig.class);
-		applicationContext.addBeanFactoryPostProcessor(new InitBeanFactoryPostProcessor());
+		//applicationContext.addBeanFactoryPostProcessor(new InitBeanFactoryPostProcessor());
 		applicationContext.refresh();
 		InjectAutowiredService autowiredService = (InjectAutowiredService) applicationContext.getBean("injectAutowiredService");
 		autowiredService.query();

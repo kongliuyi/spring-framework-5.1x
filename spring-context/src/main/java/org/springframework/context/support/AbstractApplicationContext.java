@@ -516,11 +516,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
 			// 准备工作包括设置启动时间，是否激活标识位，
-			// 初始化属性源(property source)配置
+			// 初始化属性源 (property source) 配置
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			// 告诉子类刷新内部bean工厂。
+			// 告诉子类刷新内部 bean 工厂。
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -906,7 +906,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize LoadTimeWeaverAware beans early to allow for registering their transformers early.
-		//尽早初始化LoadTimeWeaverAware bean，以便尽早注册它们的转换器。
+		// 尽早初始化 LoadTimeWeaverAware bean，以便尽早注册它们的转换器。
 		String[] weaverAwareNames = beanFactory.getBeanNamesForType(LoadTimeWeaverAware.class, false, false);
 		for (String weaverAwareName : weaverAwareNames) {
 			getBean(weaverAwareName);

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.config.BeanDefinitionVisitor;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringValueResolver;
 /**
  * 注：该 InitBeanFactoryPostProcessor 后置处理器是在测试类手动添加至容器中
@@ -12,6 +13,7 @@ import org.springframework.util.StringValueResolver;
  * @Author: kongLiuYi
  * @Date: 2020/2/23 14:13
  */
+@Component
 public class InitBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
 

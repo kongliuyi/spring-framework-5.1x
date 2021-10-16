@@ -127,7 +127,7 @@ final class PostProcessorRegistrationDelegate {
 					processedBeans.add(ppName);
 				}
 			}
-			// 排序不重要，况且 currentRegistryProcessors 这里也只有一个 ConfigurationClassPostProcessor 数据
+			// 排序不重要，况且 currentRegistryProcessors 这里也只有一个 ConfigurationClassPostProcessor 数据,new AnnotationConfigApplicationContext 时候注册进去的
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			// 合并list，将自定义的和 spring 内部的 BeanDefinitionRegistryPostProcessor 放在一起
 			registryProcessors.addAll(currentRegistryProcessors);
@@ -135,8 +135,8 @@ final class PostProcessorRegistrationDelegate {
 
 			/*
 			 * 执行所有非自定义 BeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry
-			 * --这一步很重要
-			 * 这里可以称之为工厂实例化的核心，例如：类的扫描生成的BeanDefinition等			 */
+			 * --这一步很重要，里可以称之为工厂实例化的核心，处理现有 BeanDefinition 中存在全配置 Configuration、和列表配置 Component  ComponentScan Import ImportResource
+			 的类，解析生成一系列的	BeanDefinition	 */
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 
 			/*
@@ -145,9 +145,9 @@ final class PostProcessorRegistrationDelegate {
 			 */
 			currentRegistryProcessors.clear();
 
-			// 这里不懂，为什么再次调用，我认为就是处理这个过程中又添加了一个 BeanDefinitionRegistryPostProcessor
+			// 处理 invokeBeanDefinitionRegistryPostProcessors 这个过程中添加的 BeanDefinitionRegistryPostProcessor
 			// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.
-		    // 接下来，调用实现 Ordered 的BeanDefinitionRegistryPostProcessors。
+		    // 接下来，调用实现 Ordered 的B eanDefinitionRegistryPostProcessors。
 			postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
 				if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) {
@@ -160,7 +160,7 @@ final class PostProcessorRegistrationDelegate {
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 			currentRegistryProcessors.clear();
 
-			// 这里不懂，为什么第三次次调用甚至循环调用。 标记一下
+			// 可能存在每次扫描都会 BeanDefinitionRegistryPostProcessor，所以使用死循环处理，直至没有新的 BeanDefinitionRegistryPostProcessor 生成
 			// Finally, invoke all other BeanDefinitionRegistryPostProcessors until no further ones appear.
 			// 最后，调用所有其他的 BeanDefinitionRegistryPostProcessors，直到没有其他的出现。
 			boolean reiterate = true;
@@ -240,6 +240,7 @@ final class PostProcessorRegistrationDelegate {
 		for (String postProcessorName : nonOrderedPostProcessorNames) {
 			nonOrderedPostProcessors.add(beanFactory.getBean(postProcessorName, BeanFactoryPostProcessor.class));
 		}
+		// 执行扫描出来的 BeanFactoryPostProcessor.postProcessBeanFactory，例如加 @Component 注解的 InitBeanFactoryPostProcessor
 		invokeBeanFactoryPostProcessors(nonOrderedPostProcessors, beanFactory);
 
 		// Clear cached merged bean definitions since the post-processors might have

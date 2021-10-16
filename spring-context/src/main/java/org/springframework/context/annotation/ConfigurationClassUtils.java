@@ -223,7 +223,7 @@ abstract class ConfigurationClassUtils {
 	}
 
 	/**
-	 * 检查 BeanDefinition 定义中是否 configurationClass属性为full
+	 * 检查 BeanDefinition 定义中是否 configurationClass 属性为full
 	 *
 	 * 确定给定的bean定义是否表示完整的{@code @Configuration}
 	 * Determine whether the given bean definition indicates a full {@code @Configuration}

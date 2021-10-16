@@ -196,6 +196,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		// 再次校验
 		validate(aspectInstanceFactory.getAspectMetadata().getAspectClass());
 
+		// 封装切点-即连接段断言也可称为连接点选择器
 		AspectJExpressionPointcut expressionPointcut = getPointcut(
 				candidateAdviceMethod, aspectInstanceFactory.getAspectMetadata().getAspectClass());
 		if (expressionPointcut == null) {

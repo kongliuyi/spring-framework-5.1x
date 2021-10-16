@@ -234,7 +234,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	/**
-	 * 准备在运行时服务bean请求的配置类，用cglib增强的子类替换它们。
+	 * 准备在运行时服务 bean 请求的配置类，用 cglib 增强的子类替换它们。
 	 * Prepare the Configuration classes for servicing bean requests at runtime
 	 * by replacing them with CGLIB-enhanced subclasses.
 	 */
@@ -430,7 +430,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Map<String, AbstractBeanDefinition> configBeanDefs = new LinkedHashMap<>();
 		for (String beanName : beanFactory.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
-			//将含有 @Configuration注解的类 放入 configBeanDefs 集合中
+			// 将含有 @Configuration 注解的类 放入 configBeanDefs 集合中
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef)) {
 				if (!(beanDef instanceof AbstractBeanDefinition)) {
 					throw new BeanDefinitionStoreException("Cannot enhance @Configuration bean definition '" +
@@ -454,7 +454,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		for (Map.Entry<String, AbstractBeanDefinition> entry : configBeanDefs.entrySet()) {
 			AbstractBeanDefinition beanDef = entry.getValue();
 			// If a @Configuration class gets proxied, always proxy the target class
-			//一个含有 @Configuration注解的类被代理 ，则始终代理这个目标类
+			//一个含有 @Configuration 注解的类被代理 ，则始终代理这个目标类
 			beanDef.setAttribute(AutoProxyUtils.PRESERVE_TARGET_CLASS_ATTRIBUTE, Boolean.TRUE);
 			try {
 				// Set enhanced subclass of the user-specified bean class
